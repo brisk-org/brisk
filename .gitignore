@@ -1,0 +1,8 @@
+.env
+.idea/
+.vscode/
+node_modules/
+build/
+dist/
+tmp/
+temp/
