@@ -6,6 +6,8 @@ const connection: ConnectionOptions = {
   database: "brisk-systems",
   username: "postgres",
   password: process.env.DB_PASSWORD,
+  host: "localhost",
+  port: 5433,
   entities: [path.join(__dirname, "/src/entities/*.{ts,js}")],
   migrations: [path.join(__dirname, "/src/migrations/*.{ts,js}")],
   subscribers: [path.join(__dirname, "/src/subscribers/*.{ts,js}")],
@@ -14,7 +16,8 @@ const connection: ConnectionOptions = {
     migrationsDir: "/src/migrations",
     subscribersDir: "/src/subscriber",
   },
-  synchronize: true,
+  synchronize: !production,
   logging: !production,
 };
+
 export default connection;
