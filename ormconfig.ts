@@ -3,11 +3,7 @@ import path from "path";
 const production = process.env.NODE_ENV === "production";
 const connection: ConnectionOptions = {
   type: "postgres",
-  database: "brisk-systems",
-  username: "postgres",
-  password: process.env.DB_PASSWORD,
-  host: "localhost",
-  port: 5433,
+  url: process.env.DATABASE_URL,
   entities: [path.join(__dirname, "/src/entities/*.{ts,js}")],
   migrations: [path.join(__dirname, "/src/migrations/*.{ts,js}")],
   subscribers: [path.join(__dirname, "/src/subscribers/*.{ts,js}")],
