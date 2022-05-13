@@ -42,6 +42,7 @@ const main = async function () {
       onConnect: () => console.log("Connected"),
       onDisconnect: () => console.log("Disconnect"),
     },
+    playground: true,
   });
 
   app.use(async (req: any, res, next) => {
