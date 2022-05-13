@@ -84,7 +84,7 @@ const main = async function () {
   const httpServer = http.createServer(app);
   server.applyMiddleware({ app });
   server.installSubscriptionHandlers(httpServer);
-  const PORT = 4000;
+  const PORT = process.env.PORT ?? 4000;
 
   httpServer.listen(PORT, () => {
     console.log(`Server Started at localhost:${PORT}`);
