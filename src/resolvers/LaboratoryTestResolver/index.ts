@@ -15,7 +15,7 @@ import {
   Args,
 } from "type-graphql";
 import { Card } from "../../entities/Card";
-import { LaboratoryTestInput, CreateLaboratoryTestInput } from "./InputType";
+import { LaboratoryTestResult, CreateLaboratoryTestInput } from "./InputType";
 
 import {
   OffsetFieldsWithTime,
@@ -70,7 +70,7 @@ export class LaboratoryTestResolver {
 
   @Mutation(() => LaboratoryTest)
   async createLaboratoryTest(
-    @Arg("input") { price, cardId, result }: CreateLaboratoryTestInput,
+    @Arg("input") { totalPrice, cardId, result }: CreateLaboratoryTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
@@ -82,7 +82,7 @@ export class LaboratoryTestResolver {
     const laboratoryTest = LaboratoryTest.create({
       result: JSON.stringify(result),
       card,
-      price,
+      price: totalPrice,
     });
 
     card.laboratory_tests?.unshift(laboratoryTest);
@@ -106,7 +106,7 @@ export class LaboratoryTestResolver {
   @Mutation(() => LaboratoryTest)
   async completeLaboratoryTest(
     @Arg("id", () => ID!) id: number,
-    @Arg("result", () => [LaboratoryTestInput]) result: LaboratoryTestInput[],
+    @Arg("result", () => [LaboratoryTestResult]) result: LaboratoryTestResult[],
     @PubSub() pubsub: PubSubEngine
   ) {
     const laboratoryTest = await LaboratoryTest.findOne(id, {
@@ -153,7 +153,7 @@ export class LaboratoryTestResolver {
   @Mutation(() => LaboratoryTest)
   async completeLaterLaboratoryTest(
     @Arg("id", () => ID!) id: number,
-    @Arg("result", () => [LaboratoryTestInput]) result: LaboratoryTestInput[]
+    @Arg("result", () => [LaboratoryTestResult]) result: LaboratoryTestResult[]
   ) {
     const laboratoryTest = await LaboratoryTest.findOne(id, {
       relations: ["card"],

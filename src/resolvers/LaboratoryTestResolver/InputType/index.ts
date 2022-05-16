@@ -5,9 +5,24 @@ export class LaboratoryTestInput {
   @Field()
   name: string;
   @Field()
-  category: string;
-  @Field(() => String, { nullable: true })
-  value?: string;
+  value: string;
+}
+@InputType()
+export class LaboratorySubCategoryInput {
+  @Field()
+  name: string;
+  @Field(() => [LaboratoryTestInput])
+  tests: string;
+}
+
+@InputType()
+export class LaboratoryTestResult {
+  @Field()
+  name: string;
+  @Field(() => [LaboratorySubCategoryInput], { nullable: true })
+  subCategories?: string;
+  @Field(() => [LaboratoryTestInput], { nullable: true })
+  tests?: string;
 }
 
 @InputType()
@@ -16,8 +31,8 @@ export class CreateLaboratoryTestInput {
   cardId!: number;
 
   @Field()
-  price!: number;
+  totalPrice!: number;
 
-  @Field(() => [LaboratoryTestInput])
+  @Field(() => [LaboratoryTestResult])
   result!: string;
 }
