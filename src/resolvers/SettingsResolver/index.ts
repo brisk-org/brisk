@@ -18,16 +18,14 @@ export class SettingsResolver {
         const rate = await Settings.create({
           id: 1,
           ...setting,
-          laboratory_tests_data: JSON.stringify(setting.laboratory_tests_data),
-          prescription_tests_data: JSON.stringify(
-            setting.prescription_tests_data
-          ),
+          laboratory_tests_data: setting.laboratory_tests_data,
+          prescription_tests_data: setting.prescription_tests_data,
         }).save();
         return rate;
       }
       Settings.update(1, {
         ...setting,
-        laboratory_tests_data: JSON.stringify(setting.laboratory_tests_data),
+        laboratory_tests_data: setting.laboratory_tests_data,
         prescription_tests_data: JSON.stringify(
           setting.prescription_tests_data
         ),

@@ -1,4 +1,3 @@
-import { LaboratoryTestResult } from "../../LaboratoryTestResolver/InputType";
 import { InputType, Field } from "type-graphql";
 import { PrescriptionInput as PrescriptionTestSettingInput } from "../../PrescriptionTestResolver/InputType";
 
@@ -10,7 +9,7 @@ export class ChangeSettingsInput {
   @Field()
   card_expiration_date: number;
 
-  @Field(() => [LaboratoryTestResult])
+  @Field(() => String!)
   laboratory_tests_data: string;
 
   @Field(() => [PrescriptionTestSettingInput])

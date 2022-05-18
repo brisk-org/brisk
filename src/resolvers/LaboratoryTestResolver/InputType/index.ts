@@ -33,6 +33,6 @@ export class CreateLaboratoryTestInput {
   @Field()
   totalPrice!: number;
 
-  @Field(() => [LaboratoryTestResult])
+  @Field(() => String!)
   result!: string;
 }
