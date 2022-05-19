@@ -6,8 +6,10 @@ export class PrescriptionInput {
   name: string;
   @Field()
   price: number;
+  @Field()
+  inStock: number;
   @Field(() => String, { nullable: true })
-  quantity?: string;
+  strength?: string;
   @Field()
   perDay: string;
   @Field()
