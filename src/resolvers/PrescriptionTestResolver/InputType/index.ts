@@ -31,3 +31,15 @@ export class CreatePrescriptionTestInput {
   @Field(() => [PrescriptionInput])
   result!: string;
 }
+
+@InputType()
+export class UpdatePrescriptionTestInput {
+  @Field(() => ID!)
+  id: number;
+
+  @Field()
+  done: boolean;
+
+  @Field(() => [PrescriptionInput])
+  result: string;
+}

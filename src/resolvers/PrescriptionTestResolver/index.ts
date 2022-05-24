@@ -14,7 +14,10 @@ import {
   Subscription,
 } from "type-graphql";
 import { Card } from "../../entities/Card";
-import { CreatePrescriptionTestInput } from "./InputType";
+import {
+  CreatePrescriptionTestInput,
+  UpdatePrescriptionTestInput,
+} from "./InputType";
 import { PrescriptionTest } from "../../entities/PrescriptionTest";
 import Context from "../../constants/Context";
 import {
@@ -106,7 +109,7 @@ export class PrescriptionResolver {
 
   @Mutation(() => PrescriptionTest)
   async markPrescriptionTestAsCompleted(
-    @Arg("id", () => ID!) id: number,
+    @Arg("main") { id, result, done: completed }: UpdatePrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescriptionTest = await PrescriptionTest.findOne(id, {
@@ -118,7 +121,8 @@ export class PrescriptionResolver {
     await PrescriptionTest.update(
       { id },
       {
-        completed: true,
+        completed,
+        result: JSON.stringify(result),
       }
     );
     const notification = await Notification.create({
@@ -148,7 +152,7 @@ export class PrescriptionResolver {
   }
   @Mutation(() => PrescriptionTest)
   async markPrescriptionTestAsPaid(
-    @Arg("id", () => ID!) id: number,
+    @Arg("main") { id, result, done: paid }: UpdatePrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescriptionTest = await PrescriptionTest.findOne(id, {
@@ -158,7 +162,11 @@ export class PrescriptionResolver {
       return null;
     }
 
-    await PrescriptionTest.update(id, { paid: true });
+    await PrescriptionTest.update(id, {
+      paid,
+      started: true,
+      result: JSON.stringify(result),
+    });
 
     const notification = await Notification.create({
       prescription_test_id: prescriptionTest.id,

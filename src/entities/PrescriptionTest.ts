@@ -40,6 +40,10 @@ export class PrescriptionTest extends BaseEntity {
   paid!: boolean;
 
   @Field()
+  @Column({ default: false })
+  started!: boolean;
+
+  @Field()
   @Column()
   price!: number;
 
