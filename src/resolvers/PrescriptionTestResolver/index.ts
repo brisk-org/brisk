@@ -121,6 +121,7 @@ export class PrescriptionResolver {
     await PrescriptionTest.update(
       { id },
       {
+        started: !completed,
         completed,
         result: JSON.stringify(result),
       }
