@@ -5,11 +5,10 @@ import { SettingsResolver } from "./SettingsResolver";
 import { CardsResolver } from "./CardResolver";
 import { CardSalesResolver } from "./CardSalesResolver";
 import { HistoryResolver } from "./HistoryResolver";
-import { PrescriptionResolver } from "./PrescriptionTestResolver";
+import { PrescriptionResolver } from "./PrescriptionResolver";
 import { QuickPrescriptionResolver } from "./QuickPrescriptionTestResolver";
 import { QuickLaboratoryTestResolver } from "./QuickLaboratoryTestResolver";
 import { NotificationResolver } from "./NotificationResolver";
-import { ProductResolver } from "./ProductResolver";
 
 export default [
   UserResolver,
@@ -18,7 +17,6 @@ export default [
   CardsResolver,
   CardSalesResolver,
   HistoryResolver,
-  ProductResolver,
   PrescriptionResolver,
   QuickPrescriptionResolver,
   QuickLaboratoryTestResolver,

@@ -1,16 +1,18 @@
 import { Field, ID, ObjectType } from "type-graphql";
 import {
   Entity,
-  BaseEntity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  BaseEntity,
+  OneToMany,
 } from "typeorm";
+import { PrescriptionMedication } from "./PrescriptionMedication";
 
 @ObjectType()
 @Entity()
-export class Product extends BaseEntity {
+export class Medicine extends BaseEntity {
   @Field(() => ID!)
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,13 +21,23 @@ export class Product extends BaseEntity {
   @Column()
   name: string;
 
+  @Field(() => PrescriptionMedication)
+  @OneToMany(
+    () => PrescriptionMedication,
+    (prescription) => prescription.medicine,
+    {
+      onDelete: "CASCADE",
+    }
+  )
+  prescription: PrescriptionMedication;
+
   @Field()
   @Column()
   price: number;
 
   @Field()
   @Column()
-  desc: string;
+  inStock: number;
 
   @Field(() => String)
   @CreateDateColumn()

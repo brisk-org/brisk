@@ -18,7 +18,7 @@ import {
   CreatePrescriptionTestInput,
   UpdatePrescriptionTestInput,
 } from "./InputType";
-import { PrescriptionTest } from "../../entities/PrescriptionTest";
+import { Prescription } from "../../entities/Prescription";
 import Context from "../../constants/Context";
 import {
   OffsetFieldsWithTime,
@@ -36,31 +36,31 @@ import { Notification } from "../../entities/Notification";
 export class PrescriptionResolver {
   @Query(() => Float)
   async prescriptionTestsCount(): Promise<number> {
-    return await PrescriptionTest.count();
+    return await Prescription.count();
   }
-  @Query(() => [PrescriptionTest])
+  @Query(() => [Prescription])
   async prescriptionTests(@Args() { skip, take }: OffsetFieldsWithTime) {
-    return await PrescriptionTest.find({
+    return await Prescription.find({
       relations: ["card"],
-      order: { id: "DESC" },
+      order: { updated_at: "DESC", inrolled: "DESC", id: "DESC" },
       skip,
       take,
     });
   }
-  @Query(() => PrescriptionTest)
+  @Query(() => Prescription)
   async prescriptionTest(@Arg("id", () => ID!) id: number | string) {
-    return await PrescriptionTest.findOne(id, {
+    return await Prescription.findOne(id, {
       relations: ["card"],
     });
   }
-  @Query(() => [PrescriptionTest])
+  @Query(() => [Prescription])
   async searchPrescriptionTests(
     @Args()
     { term, skip, take }: SearchAndOffsetFields,
     @Ctx() { connection }: Context
-  ): Promise<PrescriptionTest[]> {
+  ): Promise<Prescription[]> {
     return await connection
-      .getRepository(PrescriptionTest)
+      .getRepository(Prescription)
       .createQueryBuilder("prescription")
       .leftJoinAndSelect("prescription.card", "card")
       .where("card.name ILIKE :name", { name: `%${term}%` })
@@ -69,7 +69,7 @@ export class PrescriptionResolver {
       .orderBy("prescription.id", "DESC")
       .getMany();
   }
-  @Mutation(() => PrescriptionTest)
+  @Mutation(() => Prescription)
   async createPrescriptionTest(
     @Arg("main") { price, cardId, result }: CreatePrescriptionTestInput,
     @Arg("rx") rx: string,
@@ -81,7 +81,7 @@ export class PrescriptionResolver {
       throw new Error("Card Not Defined or was Deleted");
     }
 
-    const prescriptionTest = PrescriptionTest.create({
+    const prescriptionTest = Prescription.create({
       result: JSON.stringify(result),
       card,
       price,
@@ -107,21 +107,21 @@ export class PrescriptionResolver {
     return prescriptionTest;
   }
 
-  @Mutation(() => PrescriptionTest)
+  @Mutation(() => Prescription)
   async markPrescriptionTestAsCompleted(
     @Arg("main") { id, result, done: completed }: UpdatePrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const prescriptionTest = await PrescriptionTest.findOne(id, {
+    const prescriptionTest = await Prescription.findOne(id, {
       relations: ["card"],
     });
     if (!prescriptionTest) {
       return null;
     }
-    await PrescriptionTest.update(
+    await Prescription.update(
       { id },
       {
-        started: !completed,
+        inrolled: !completed,
         completed,
         result: JSON.stringify(result),
       }
@@ -151,21 +151,21 @@ export class PrescriptionResolver {
     });
     return prescriptionTest;
   }
-  @Mutation(() => PrescriptionTest)
+  @Mutation(() => Prescription)
   async markPrescriptionTestAsPaid(
     @Arg("main") { id, result, done: paid }: UpdatePrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const prescriptionTest = await PrescriptionTest.findOne(id, {
+    const prescriptionTest = await Prescription.findOne(id, {
       relations: ["card"],
     });
     if (!prescriptionTest) {
       return null;
     }
 
-    await PrescriptionTest.update(id, {
+    await Prescription.update(id, {
       paid,
-      started: true,
+      inrolled: true,
       result: JSON.stringify(result),
     });
 
@@ -198,21 +198,21 @@ export class PrescriptionResolver {
   }
   @Mutation(() => Boolean)
   async deletePrescriptionTest(@Arg("id", () => ID!) id: number) {
-    await PrescriptionTest.delete(id);
+    await Prescription.delete(id);
     return true;
   }
-  @Mutation(() => PrescriptionTest)
+  @Mutation(() => Prescription)
   async markPrescriptionTestAsSeen(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const prescriptionTest = await PrescriptionTest.findOne(id, {
+    const prescriptionTest = await Prescription.findOne(id, {
       relations: ["card"],
     });
     if (!prescriptionTest) {
       return null;
     }
-    await PrescriptionTest.update({ id }, { new: false });
+    await Prescription.update({ id }, { new: false });
     const notification = await Notification.findOne({
       where: {
         prescription_test_id: prescriptionTest.id,
@@ -229,12 +229,12 @@ export class PrescriptionResolver {
 
     return prescriptionTest;
   }
-  @Subscription(() => PrescriptionTest, {
+  @Subscription(() => Prescription, {
     topics: NEW_CREATE_PRESCRIPTION,
   })
   async newCreatedPrescriptionTest(
-    @Root() { prescriptionTest }: { prescriptionTest: PrescriptionTest }
-  ): Promise<PrescriptionTest> {
+    @Root() { prescriptionTest }: { prescriptionTest: Prescription }
+  ): Promise<Prescription> {
     return prescriptionTest;
   }
 }

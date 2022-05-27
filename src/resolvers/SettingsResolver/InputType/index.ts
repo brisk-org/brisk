@@ -1,5 +1,5 @@
 import { InputType, Field } from "type-graphql";
-import { PrescriptionInput as PrescriptionTestSettingInput } from "../../PrescriptionTestResolver/InputType";
+// import { PrescriptionInput as PrescriptionTestSettingInput } from "../../PrescriptionRequestResolver/InputType";
 
 @InputType()
 export class ChangeSettingsInput {
@@ -12,6 +12,6 @@ export class ChangeSettingsInput {
   @Field(() => String!)
   laboratory_tests_data: string;
 
-  @Field(() => [PrescriptionTestSettingInput])
+  @Field(() => String)
   prescription_tests_data: string;
 }

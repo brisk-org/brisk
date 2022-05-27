@@ -11,7 +11,7 @@ import {
 import { LaboratoryTest } from "./LaboratoryTest";
 import { History } from "./History";
 import { CardSales } from "./CardSales";
-import { PrescriptionTest } from "./PrescriptionTest";
+import { Prescription } from "./Prescription";
 
 @ObjectType()
 @Entity()
@@ -24,11 +24,11 @@ export class Card extends BaseEntity {
   @OneToMany(() => LaboratoryTest, (test) => test.card, { nullable: true })
   laboratory_tests?: LaboratoryTest[];
 
-  @Field(() => [PrescriptionTest], { nullable: true })
-  @OneToMany(() => PrescriptionTest, (prescription) => prescription.card, {
+  @Field(() => [Prescription], { nullable: true })
+  @OneToMany(() => Prescription, (prescription) => prescription.card, {
     nullable: true,
   })
-  prescription_tests?: PrescriptionTest[];
+  prescription_tests?: Prescription[];
 
   @Field()
   @Column()
