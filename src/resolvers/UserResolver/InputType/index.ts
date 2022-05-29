@@ -1,5 +1,6 @@
 import { User } from "../../../entities/User";
 import { Field, ObjectType, ArgsType } from "type-graphql";
+import { Occupation } from "../../../utils/EnumTypes";
 
 @ObjectType()
 export class FieldError {
@@ -33,6 +34,6 @@ export class UserRegisterArgs {
   @Field()
   password: string;
 
-  @Field()
+  @Field(() => Occupation)
   occupation: string;
 }

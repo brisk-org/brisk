@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Occupation } from "../utils/EnumTypes";
 
 @ObjectType()
 @Entity()
@@ -19,7 +20,7 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   username: string;
 
-  @Field()
+  @Field(() => Occupation)
   @Column()
   occupation: string;
 
