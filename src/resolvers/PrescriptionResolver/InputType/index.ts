@@ -1,35 +1,15 @@
-import { InputType, Field, ID } from "type-graphql";
+import { InputType, Field, ID, ArgsType } from "type-graphql";
 
-@InputType()
-export class PrescriptionInput {
-  @Field()
-  name: string;
-  @Field()
-  price: number;
-  @Field()
-  inStock: number;
-  @Field({ nullable: true })
-  strength?: string;
-  @Field()
-  perDay: string;
-  @Field()
-  checkIn: string;
-  @Field()
-  forDays: number;
-  @Field(() => String, { nullable: true })
-  other: string;
-}
-
-@InputType()
-export class CreatePrescriptionTestInput {
+@ArgsType()
+export class CreatePrescriptionArgs {
   @Field(() => ID!)
   cardId!: number;
 
   @Field()
-  price!: number;
+  totalPrice: number;
 
-  @Field(() => [PrescriptionInput])
-  result!: string;
+  @Field()
+  rx: string;
 }
 
 @InputType()
@@ -39,7 +19,4 @@ export class UpdatePrescriptionTestInput {
 
   @Field()
   done: boolean;
-
-  @Field(() => [PrescriptionInput])
-  result: string;
 }

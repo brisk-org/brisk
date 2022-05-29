@@ -11,46 +11,54 @@ import {
 } from "typeorm";
 import { Medicine } from "./Medicine";
 import { Prescription } from "./Prescription";
+import { PerDay } from "../utils/EnumTypes";
+
+@ObjectType("CheckInObjectType")
+class CheckIn {
+  @Field()
+  date: string;
+  @Field()
+  isPaid: boolean;
+  @Field()
+  isCompleted: boolean;
+}
 
 @ObjectType()
 @Entity()
-export class PrescriptionMedication extends BaseEntity {
+export class Medication extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Field(() => Medicine)
   @ManyToOne(() => Medicine, (medicine) => medicine.prescription, {
     onDelete: "CASCADE",
   })
-  medicine: Medicine;
+  medicine!: Medicine;
 
-  @Field(() => Prescription)
-  @OneToOne(
-    () => Prescription,
-    (prescription) => prescription.prescription_medication
-  )
+  @Field(() => Medication)
+  @OneToOne(() => Prescription, (prescription) => prescription.medications)
   prescription: Prescription;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
   strength?: string;
 
-  @Field()
+  @Field(() => PerDay)
   @Column()
   perDay: string;
 
-  @Field()
-  @Column()
-  checkIn: string;
+  @Field(() => [CheckIn])
+  @Column({ type: "json" })
+  checkIn: CheckIn[];
 
   @Field()
   @Column()
   forDays: number;
 
   @Field({ nullable: true })
-  @Column()
-  other: string;
+  @Column({ nullable: true })
+  other?: string;
 
   @Field(() => String)
   @CreateDateColumn()

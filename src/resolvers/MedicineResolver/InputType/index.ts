@@ -1,6 +1,7 @@
-import { InputType, Field, ID } from "type-graphql";
+import { PerDay } from "../../../utils/EnumTypes";
+import { Field, ID, ArgsType } from "type-graphql";
 
-@InputType()
+@ArgsType()
 export class CreateMedicineInput {
   @Field()
   name: string;
@@ -10,9 +11,17 @@ export class CreateMedicineInput {
 
   @Field()
   inStock: number;
+  @Field({ nullable: true })
+  forDays?: number;
+
+  @Field(() => PerDay, { nullable: true })
+  perDay?: string;
+
+  @Field({ nullable: true })
+  strength?: string;
 }
 
-@InputType()
+@ArgsType()
 export class UpdateMedicineInput extends CreateMedicineInput {
   @Field(() => ID!)
   id: number;

@@ -28,7 +28,7 @@ export class Card extends BaseEntity {
   @OneToMany(() => Prescription, (prescription) => prescription.card, {
     nullable: true,
   })
-  prescription_tests?: Prescription[];
+  prescriptions?: Prescription[];
 
   @Field()
   @Column()

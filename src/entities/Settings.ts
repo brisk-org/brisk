@@ -25,7 +25,7 @@ export class Settings extends BaseEntity {
 
   @Field()
   @Column({ type: "json" })
-  prescription_tests_data: string;
+  prescription_data: string;
 
   @Field()
   @Column({ default: 30 })

@@ -9,11 +9,11 @@ import {
 
 type NotifAction =
   | "PAY_FOR_LABORATORY_TEST"
-  | "PAY_FOR_PRESCRIPTION_TEST"
+  | "PAY_FOR_PRESCRIPTION"
   | "PAY_FOR_QUICK_LABORATORY_TEST"
-  | "PAY_FOR_QUICK_PRESCRIPTION_TEST"
+  | "PAY_FOR_QUICK_PRESCRIPTION"
   | "CREATE_LABORATORY_TEST"
-  | "CREATE_PRESCRIPTION_TEST"
+  | "CREATE_PRESCRIPTION"
   | "CREATE_CARD"
   | "PRODUCT_CARD"
   | "CREATE_QUICK_LABORATORY_TEST"
@@ -22,7 +22,7 @@ type NotifAction =
   | "COMPLETE_LABORATORY_TEST"
   | "COMPLETE_QUICK_LABORATORY_TEST"
   | "COMPLETE_QUICK_PRESCRIPTION_TEST"
-  | "COMPLETE_PRESCRIPTION_TEST";
+  | "COMPLETE_PRESCRIPTION";
 
 @ObjectType()
 @Entity()
@@ -45,7 +45,7 @@ export class Notification extends BaseEntity {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  prescription_test_id?: number;
+  prescription_id?: number;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

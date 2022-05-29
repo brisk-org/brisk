@@ -1,5 +1,6 @@
 import {
   Arg,
+  Args,
   Float,
   ID,
   Mutation,
@@ -9,10 +10,11 @@ import {
 } from "type-graphql";
 import { CreateMedicineInput, UpdateMedicineInput } from "./InputType";
 import { Medicine } from "../../entities/Medicine";
+import { ApolloError } from "apollo-server-express";
 
 @ObjectType()
 @Resolver()
-export class PrescriptionRequestResolver {
+export class MedicineResolver {
   @Query(() => Float)
   async medicineCount(): Promise<number> {
     return await Medicine.count();
@@ -26,9 +28,7 @@ export class PrescriptionRequestResolver {
     return await Medicine.findOne(id);
   }
   @Mutation(() => Medicine)
-  async addMedicine(
-    @Arg("main") { name, price, inStock }: CreateMedicineInput
-  ) {
+  async addMedicine(@Args() { name, price, inStock }: CreateMedicineInput) {
     return await Medicine.create({
       name,
       price,
@@ -37,13 +37,19 @@ export class PrescriptionRequestResolver {
   }
   @Mutation(() => Medicine)
   async updateMedicine(
-    @Arg("main") { id, name, price, inStock }: UpdateMedicineInput
+    @Args() { id, name, price, inStock }: UpdateMedicineInput
   ) {
-    return await Medicine.update(id, {
+    const medicine = await Medicine.findOne(id);
+    if (!medicine) {
+      throw new ApolloError(`No Medicine with id ${id}`);
+    }
+    await Medicine.update(id, {
       name,
       price,
       inStock,
     });
+    await medicine.reload();
+    return medicine;
   }
 
   @Mutation(() => Boolean)

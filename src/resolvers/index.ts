@@ -3,20 +3,24 @@ import { UserResolver } from "./UserResolver";
 import { LaboratoryTestResolver } from "./LaboratoryTestResolver";
 import { SettingsResolver } from "./SettingsResolver";
 import { CardsResolver } from "./CardResolver";
+import { MedicineResolver } from "./MedicineResolver";
 import { CardSalesResolver } from "./CardSalesResolver";
 import { HistoryResolver } from "./HistoryResolver";
 import { PrescriptionResolver } from "./PrescriptionResolver";
+import { MedicationResolver } from "./MedicationResolver";
 import { QuickPrescriptionResolver } from "./QuickPrescriptionTestResolver";
 import { QuickLaboratoryTestResolver } from "./QuickLaboratoryTestResolver";
 import { NotificationResolver } from "./NotificationResolver";
 
 export default [
   UserResolver,
+  MedicineResolver,
   LaboratoryTestResolver,
   SettingsResolver,
   CardsResolver,
   CardSalesResolver,
   HistoryResolver,
+  MedicationResolver,
   PrescriptionResolver,
   QuickPrescriptionResolver,
   QuickLaboratoryTestResolver,

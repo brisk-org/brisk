@@ -1,3 +1,4 @@
+import { PerDay } from "../utils/EnumTypes";
 import { Field, ID, ObjectType } from "type-graphql";
 import {
   Entity,
@@ -8,7 +9,7 @@ import {
   BaseEntity,
   OneToMany,
 } from "typeorm";
-import { PrescriptionMedication } from "./PrescriptionMedication";
+import { Medication } from "./Medication";
 
 @ObjectType()
 @Entity()
@@ -21,15 +22,11 @@ export class Medicine extends BaseEntity {
   @Column()
   name: string;
 
-  @Field(() => PrescriptionMedication)
-  @OneToMany(
-    () => PrescriptionMedication,
-    (prescription) => prescription.medicine,
-    {
-      onDelete: "CASCADE",
-    }
-  )
-  prescription: PrescriptionMedication;
+  @Field(() => Medication)
+  @OneToMany(() => Medication, (prescription) => prescription.medicine, {
+    onDelete: "CASCADE",
+  })
+  prescription: Medication;
 
   @Field()
   @Column()
@@ -38,6 +35,18 @@ export class Medicine extends BaseEntity {
   @Field()
   @Column()
   inStock: number;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  strength?: string;
+
+  @Field(() => PerDay, { nullable: true })
+  @Column({ nullable: true })
+  perDay?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  forDays?: number;
 
   @Field(() => String)
   @CreateDateColumn()

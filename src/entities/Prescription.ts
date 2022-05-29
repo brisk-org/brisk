@@ -10,7 +10,7 @@ import {
   OneToMany,
 } from "typeorm";
 import { Card } from "./Card";
-import { PrescriptionMedication } from "./PrescriptionMedication";
+import { Medication } from "./Medication";
 
 @ObjectType()
 @Entity()
@@ -24,22 +24,18 @@ export class Prescription extends BaseEntity {
   cardId: number;
 
   @Field(() => Card)
-  @ManyToOne(() => Card, (card) => card.prescription_tests, {
+  @ManyToOne(() => Card, (card) => card.prescriptions, {
     onDelete: "CASCADE",
   })
   card: Card;
 
-  @Field()
-  @Column({ type: "json" })
-  result: string;
-
-  @Field(() => [PrescriptionMedication])
+  @Field(() => [Medication], { nullable: true })
   @OneToMany(
-    () => PrescriptionMedication,
+    () => Medication,
     (prescriptionMedication) => prescriptionMedication.prescription,
     { onDelete: "CASCADE" }
   )
-  prescription_medication: PrescriptionMedication[];
+  medications?: Medication[];
 
   @Field()
   @Column()

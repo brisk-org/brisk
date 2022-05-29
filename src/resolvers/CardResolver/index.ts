@@ -53,12 +53,7 @@ export class CardsResolver {
   @Query(() => Card)
   async card(@Arg("id", () => ID!) id: number | string) {
     return await Card.findOne(id, {
-      relations: [
-        "laboratory_tests",
-        "payment",
-        "history",
-        "prescription_tests",
-      ],
+      relations: ["laboratory_tests", "payment", "history", "prescriptions"],
     });
   }
   @Query(() => [Card])

@@ -19,16 +19,14 @@ export class SettingsResolver {
           id: 1,
           ...setting,
           laboratory_tests_data: setting.laboratory_tests_data,
-          prescription_tests_data: setting.prescription_tests_data,
+          prescription_data: setting.prescription_data,
         }).save();
         return rate;
       }
       Settings.update(1, {
         ...setting,
         laboratory_tests_data: setting.laboratory_tests_data,
-        prescription_tests_data: JSON.stringify(
-          setting.prescription_tests_data
-        ),
+        prescription_data: JSON.stringify(setting.prescription_data),
       });
 
       await exists.reload();
