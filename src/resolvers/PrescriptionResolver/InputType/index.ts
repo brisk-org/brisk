@@ -1,4 +1,4 @@
-import { InputType, Field, ID, ArgsType } from "type-graphql";
+import { Field, ID, ArgsType } from "type-graphql";
 
 @ArgsType()
 export class CreatePrescriptionArgs {
@@ -6,17 +6,8 @@ export class CreatePrescriptionArgs {
   cardId!: number;
 
   @Field()
-  totalPrice: number;
+  price: number;
 
   @Field()
   rx: string;
-}
-
-@InputType()
-export class UpdatePrescriptionTestInput {
-  @Field(() => ID!)
-  id: number;
-
-  @Field()
-  done: boolean;
 }

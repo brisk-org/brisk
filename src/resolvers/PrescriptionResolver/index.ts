@@ -27,6 +27,7 @@ import {
   NEW_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
 import { Notification } from "../../entities/Notification";
+import { CheckInInput } from "../MedicationResolver/InputType";
 
 @ObjectType()
 @Resolver()
@@ -38,7 +39,7 @@ export class PrescriptionResolver {
   @Query(() => [Prescription])
   async prescriptions(@Args() { skip, take }: OffsetFieldsWithTime) {
     return await Prescription.find({
-      relations: ["card"],
+      relations: ["card", "medications", "medications.medicine"],
       order: { updated_at: "DESC", inrolled: "DESC", id: "DESC" },
       skip,
       take,
@@ -68,7 +69,7 @@ export class PrescriptionResolver {
   }
   @Mutation(() => Prescription)
   async createPrescription(
-    @Args() { totalPrice, cardId, rx }: CreatePrescriptionArgs,
+    @Args() { price, cardId, rx }: CreatePrescriptionArgs,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
@@ -79,7 +80,7 @@ export class PrescriptionResolver {
 
     const prescription = Prescription.create({
       card,
-      price: totalPrice,
+      price,
       rx,
     });
 
@@ -102,95 +103,143 @@ export class PrescriptionResolver {
     return prescription;
   }
 
-  // @Mutation(() => Prescription)
-  // async markPrescriptionTestAsCompleted(
-  //   @Arg("main") { id, result, done: completed }: UpdatePrescriptionTestInput,
-  //   @PubSub() pubsub: PubSubEngine
-  // ) {
-  //   const prescription = await Prescription.findOne(id, {
-  //     relations: ["card"],
-  //   });
-  //   if (!prescription) {
-  //     return null;
-  //   }
-  //   await Prescription.update(
-  //     { id },
-  //     {
-  //       inrolled: !completed,
-  //       completed,
-  //       result: JSON.stringify(result),
-  //     }
-  //   );
-  //   const notification = await Notification.create({
-  //     prescription_test_id: prescription.id,
-  //     action: "COMPLETE_PRESCRIPTION_TEST",
-  //     desc: `A prescription test For ${prescription.card.name} was just completed!`,
-  //   }).save();
+  @Mutation(() => Prescription)
+  async markPrescriptionAsCompleted(
+    @Arg("id", () => ID!) id: number,
+    @Arg("completed") completed: boolean,
+    @PubSub() pubsub: PubSubEngine
+  ) {
+    const prescription = await Prescription.findOne(id, {
+      relations: ["card"],
+    });
+    if (!prescription) {
+      return null;
+    }
+    await Prescription.update(
+      { id },
+      {
+        completed,
+      }
+    );
+    const notification = await Notification.create({
+      prescription_id: prescription.id,
+      action: "COMPLETE_PRESCRIPTION",
+      desc: `A prescription test For ${prescription.card.name} was just completed!`,
+    }).save();
 
-  //   await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
-  //     prescription,
-  //   });
-  //   await pubsub.publish(NEW_NOTIFICATION, { notification });
-  //   const deleteNotification = await Notification.findOne({
-  //     where: {
-  //       prescription_test_id: prescription.id,
-  //       action: "PAY_FOR_PRESCRIPTION_TEST",
-  //     },
-  //   });
-  //   await pubsub.publish(DELETE_NOTIFICATION, {
-  //     notification: deleteNotification,
-  //   });
-  //   await Notification.delete({
-  //     prescription_test_id: prescription.id,
-  //     action: "PAY_FOR_PRESCRIPTION_TEST",
-  //   });
-  //   return prescription;
-  // }
-  // @Mutation(() => Prescription)
-  // async markPrescriptionTestAsPaid(
-  //   @Arg("main") { id, result, done: paid }: UpdatePrescriptionTestInput,
-  //   @PubSub() pubsub: PubSubEngine
-  // ) {
-  //   const prescription = await Prescription.findOne(id, {
-  //     relations: ["card"],
-  //   });
-  //   if (!prescription) {
-  //     return null;
-  //   }
+    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+      prescription,
+    });
+    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    const deleteNotification = await Notification.findOne({
+      where: {
+        prescription_id: prescription.id,
+        action: "PAY_FOR_PRESCRIPTION_TEST",
+      },
+    });
+    await pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification,
+    });
+    await Notification.delete({
+      prescription_id: prescription.id,
+      action: "PAY_FOR_PRESCRIPTION",
+    });
+    return prescription;
+  }
+  @Mutation(() => Prescription)
+  async updatePrescriptionCheckIn(
+    @Arg("id", () => ID!) id: number,
+    @Arg("checkIn", () => [[CheckInInput]]) checkIn: CheckInInput[][],
+    @PubSub() pubsub: PubSubEngine
+  ) {
+    const prescription = await Prescription.findOne(id, {
+      relations: ["card"],
+    });
+    if (!prescription) {
+      return null;
+    }
 
-  //   await Prescription.update(id, {
-  //     paid,
-  //     inrolled: true,
-  //     result: JSON.stringify(result),
-  //   });
+    await Prescription.update(id, {
+      medications: prescription.medications?.map((medication, index) => ({
+        ...medication,
+        checkIn: checkIn[index],
+      })),
+    });
 
-  //   const notification = await Notification.create({
-  //     prescription_test_id: prescription.id,
-  //     action: "PAY_FOR_PRESCRIPTION_TEST",
-  //     desc: ` ${prescription.card.name} just paid for the Prescription Test!`,
-  //   }).save();
-  //   const deleteNotification = await Notification.findOne({
-  //     where: {
-  //       prescription_test_id: prescription.id,
-  //       action: "CREATE_PRESCRIPTION_TEST",
-  //     },
-  //   });
+    const notification = await Notification.create({
+      prescription_id: prescription.id,
+      action: "PAY_FOR_PRESCRIPTION",
+      desc: ` ${prescription.card.name} just paid for the Prescription Test!`,
+    }).save();
+    const deleteNotification = await Notification.findOne({
+      where: {
+        prescription_id: prescription.id,
+        action: "CREATE_PRESCRIPTION_TEST",
+      },
+    });
+    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+      prescription,
+    });
+    await pubsub.publish(NEW_NOTIFICATION, { notification });
 
-  //   await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
-  //     prescription,
-  //   });
-  //   await pubsub.publish(NEW_NOTIFICATION, { notification });
-  //   await pubsub.publish(DELETE_NOTIFICATION, {
-  //     notification: deleteNotification,
-  //   });
+    if (deleteNotification) {
+      await pubsub.publish(DELETE_NOTIFICATION, {
+        notification: deleteNotification,
+      });
 
-  //   await Notification.delete({
-  //     prescription_test_id: prescription.id,
-  //     action: "CREATE_PRESCRIPTION_TEST",
-  //   });
+      await Notification.delete({
+        prescription_id: prescription.id,
+        action: "CREATE_PRESCRIPTION",
+      });
+    }
 
-  //   return prescription;
-  // }
+    return prescription;
+  }
+  @Mutation(() => Prescription)
+  async markPrescriptionAsPaid(
+    @Arg("id", () => ID!) id: number,
+    @Arg("paid") paid: boolean,
+    @PubSub() pubsub: PubSubEngine
+  ) {
+    const prescription = await Prescription.findOne(id, {
+      relations: ["card"],
+    });
+    if (!prescription) {
+      return null;
+    }
+
+    await Prescription.update(id, {
+      paid,
+      inrolled: true,
+    });
+
+    const notification = await Notification.create({
+      prescription_id: prescription.id,
+      action: "PAY_FOR_PRESCRIPTION",
+      desc: ` ${prescription.card.name} just paid for the Prescription Test!`,
+    }).save();
+    const deleteNotification = await Notification.findOne({
+      where: {
+        prescription_id: prescription.id,
+        action: "CREATE_PRESCRIPTION_TEST",
+      },
+    });
+
+    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+      prescription,
+    });
+    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    await pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification,
+    });
+
+    await Notification.delete({
+      prescription_id: prescription.id,
+      action: "CREATE_PRESCRIPTION",
+    });
+
+    return prescription;
+  }
   @Mutation(() => Boolean)
   async deletePrescription(@Arg("id", () => ID!) id: number) {
     await Prescription.delete(id);
@@ -210,7 +259,7 @@ export class PrescriptionResolver {
     await Prescription.update({ id }, { new: false });
     const notification = await Notification.findOne({
       where: {
-        prescription_test_id: prescription.id,
+        prescription_id: prescription.id,
         action: "COMPLETE_PRESCRIPTION_TEST",
       },
     });

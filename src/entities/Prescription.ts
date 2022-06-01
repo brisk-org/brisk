@@ -30,11 +30,9 @@ export class Prescription extends BaseEntity {
   card: Card;
 
   @Field(() => [Medication], { nullable: true })
-  @OneToMany(
-    () => Medication,
-    (prescriptionMedication) => prescriptionMedication.prescription,
-    { onDelete: "CASCADE" }
-  )
+  @OneToMany(() => Medication, (medication) => medication.prescription, {
+    onDelete: "CASCADE",
+  })
   medications?: Medication[];
 
   @Field()

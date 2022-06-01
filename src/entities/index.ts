@@ -9,6 +9,8 @@ import { Prescription } from "./Prescription";
 import { QuickPrescriptionTest } from "./QuickPrescriptionTest";
 import { QuickLaboratoryTest } from "./QuickLaboratoryTest";
 import { Notification } from "./Notification";
+import { Medication } from "./Medication";
+import { Medicine } from "./Medicine";
 
 export default [
   User,
@@ -16,6 +18,8 @@ export default [
   LaboratoryTest,
   History,
   Prescription,
+  Medication,
+  Medicine,
   Settings,
   CardSales,
   QuickPrescriptionTest,

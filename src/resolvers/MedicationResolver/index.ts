@@ -48,6 +48,7 @@ export class MedicationResolver {
     if (!medicine) {
       throw new ApolloError("No medicine found");
     }
+    console.log("here", medicationArgs, "here");
     const medication = Medication.create({
       medicine,
       prescription,
@@ -57,5 +58,10 @@ export class MedicationResolver {
     await prescription.save();
     await medication.save();
     return medication;
+  }
+
+  @Mutation(() => Boolean)
+  async deleteMedication(@Arg("id", () => ID!) id: number) {
+    return (await Medication.delete(id)).affected;
   }
 }

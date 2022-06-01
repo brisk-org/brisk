@@ -2,13 +2,20 @@ import { PerDay } from "../../../utils/EnumTypes";
 import { Field, ID, ArgsType, InputType } from "type-graphql";
 
 @InputType()
-export class CheckIn {
-  @Field()
-  date: string;
+export class CheckInStatusInput {
   @Field()
   isPaid: boolean;
   @Field()
   isCompleted: boolean;
+}
+@InputType()
+export class CheckInInput {
+  @Field()
+  date: string;
+  @Field()
+  price: number;
+  @Field(() => [CheckInStatusInput])
+  status: CheckInStatusInput[];
 }
 
 @ArgsType()
@@ -21,10 +28,10 @@ export class CreatePrescriptionMedicationArgs {
   strength?: string;
   @Field(() => PerDay)
   perDay: string;
-  @Field(() => [CheckIn], {
+  @Field(() => [CheckInInput], {
     description: "getting this array from the client and stringify it ",
   })
-  checkIn: CheckIn[];
+  checkIn: CheckInInput[];
   @Field()
   forDays: number;
   @Field(() => String, { nullable: true })

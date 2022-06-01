@@ -7,20 +7,26 @@ import {
   UpdateDateColumn,
   ManyToOne,
   BaseEntity,
-  OneToOne,
 } from "typeorm";
 import { Medicine } from "./Medicine";
 import { Prescription } from "./Prescription";
 import { PerDay } from "../utils/EnumTypes";
 
-@ObjectType("CheckInObjectType")
-class CheckIn {
-  @Field()
-  date: string;
+@ObjectType()
+class CheckInStatus {
   @Field()
   isPaid: boolean;
   @Field()
   isCompleted: boolean;
+}
+@ObjectType()
+class CheckIn {
+  @Field()
+  date: string;
+  @Field()
+  price: number;
+  @Field(() => [CheckInStatus])
+  status: CheckInStatus[];
 }
 
 @ObjectType()
@@ -31,13 +37,15 @@ export class Medication extends BaseEntity {
   id!: number;
 
   @Field(() => Medicine)
-  @ManyToOne(() => Medicine, (medicine) => medicine.prescription, {
+  @ManyToOne(() => Medicine, (medicine) => medicine.medications, {
     onDelete: "CASCADE",
   })
   medicine!: Medicine;
 
-  @Field(() => Medication)
-  @OneToOne(() => Prescription, (prescription) => prescription.medications)
+  @Field(() => Prescription)
+  @ManyToOne(() => Prescription, (prescription) => prescription.medications, {
+    onDelete: "CASCADE",
+  })
   prescription: Prescription;
 
   @Field({ nullable: true })

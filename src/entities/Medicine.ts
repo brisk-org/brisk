@@ -23,10 +23,10 @@ export class Medicine extends BaseEntity {
   name: string;
 
   @Field(() => Medication)
-  @OneToMany(() => Medication, (prescription) => prescription.medicine, {
+  @OneToMany(() => Medication, (medication) => medication.medicine, {
     onDelete: "CASCADE",
   })
-  prescription: Medication;
+  medications: Medication;
 
   @Field()
   @Column()
