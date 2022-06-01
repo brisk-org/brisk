@@ -28,6 +28,7 @@ import {
 } from "../../constants/subscriptionTriggername";
 import { Notification } from "../../entities/Notification";
 import { CheckInInput } from "../MedicationResolver/InputType";
+import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 
 @ObjectType()
 @Resolver()
@@ -67,6 +68,7 @@ export class PrescriptionResolver {
       .orderBy("prescription.id", "DESC")
       .getMany();
   }
+
   @Mutation(() => Prescription)
   async createPrescription(
     @Args() { price, cardId, rx }: CreatePrescriptionArgs,
@@ -89,9 +91,10 @@ export class PrescriptionResolver {
     await prescription.save();
 
     const notification = await Notification.create({
-      prescription_id: prescription.id,
-      action: "CREATE_PRESCRIPTION",
-      desc: `A prescription test For ${card.name} was just requested!`,
+      prescription,
+      for: [Occupation["RECEPTION"]],
+      action: NotificationAction["CREATE"],
+      message: `A prescription test For ${card.name} was just requested!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
@@ -122,9 +125,10 @@ export class PrescriptionResolver {
       }
     );
     const notification = await Notification.create({
-      prescription_id: prescription.id,
-      action: "COMPLETE_PRESCRIPTION",
-      desc: `A prescription test For ${prescription.card.name} was just completed!`,
+      prescription,
+      for: [Occupation["DOCTOR"]],
+      action: NotificationAction["COMPLETE"],
+      message: `A prescription test For ${prescription.card.name} was just completed!`,
     }).save();
 
     await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
@@ -133,16 +137,18 @@ export class PrescriptionResolver {
     await pubsub.publish(NEW_NOTIFICATION, { notification });
     const deleteNotification = await Notification.findOne({
       where: {
-        prescription_id: prescription.id,
-        action: "PAY_FOR_PRESCRIPTION_TEST",
+        prescription: {
+          id: prescription.id,
+        },
+        action: NotificationAction.PAYMENT,
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
       notification: deleteNotification,
     });
     await Notification.delete({
-      prescription_id: prescription.id,
-      action: "PAY_FOR_PRESCRIPTION",
+      prescription,
+      action: NotificationAction["PAYMENT"],
     });
     return prescription;
   }
@@ -167,31 +173,15 @@ export class PrescriptionResolver {
     });
 
     const notification = await Notification.create({
-      prescription_id: prescription.id,
-      action: "PAY_FOR_PRESCRIPTION",
-      desc: ` ${prescription.card.name} just paid for the Prescription Test!`,
+      prescription,
+      action: NotificationAction["CHECK_IN"],
+      for: [Occupation["NURSE"], Occupation["DOCTOR"]],
+      message: ` ${prescription.card.name} just paid for the Prescription Test!`,
     }).save();
-    const deleteNotification = await Notification.findOne({
-      where: {
-        prescription_id: prescription.id,
-        action: "CREATE_PRESCRIPTION_TEST",
-      },
-    });
     await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
       prescription,
     });
     await pubsub.publish(NEW_NOTIFICATION, { notification });
-
-    if (deleteNotification) {
-      await pubsub.publish(DELETE_NOTIFICATION, {
-        notification: deleteNotification,
-      });
-
-      await Notification.delete({
-        prescription_id: prescription.id,
-        action: "CREATE_PRESCRIPTION",
-      });
-    }
 
     return prescription;
   }
@@ -214,13 +204,14 @@ export class PrescriptionResolver {
     });
 
     const notification = await Notification.create({
-      prescription_id: prescription.id,
-      action: "PAY_FOR_PRESCRIPTION",
-      desc: ` ${prescription.card.name} just paid for the Prescription Test!`,
+      prescription,
+      for: [Occupation.NURSE],
+      action: NotificationAction["PAYMENT"],
+      message: ` ${prescription.card.name} just paid for the Prescription Test!`,
     }).save();
     const deleteNotification = await Notification.findOne({
       where: {
-        prescription_id: prescription.id,
+        prescription,
         action: "CREATE_PRESCRIPTION_TEST",
       },
     });
@@ -234,8 +225,8 @@ export class PrescriptionResolver {
     });
 
     await Notification.delete({
-      prescription_id: prescription.id,
-      action: "CREATE_PRESCRIPTION",
+      prescription,
+      action: NotificationAction["CREATE"],
     });
 
     return prescription;
@@ -259,7 +250,7 @@ export class PrescriptionResolver {
     await Prescription.update({ id }, { new: false });
     const notification = await Notification.findOne({
       where: {
-        prescription_id: prescription.id,
+        prescription,
         action: "COMPLETE_PRESCRIPTION_TEST",
       },
     });
@@ -267,8 +258,8 @@ export class PrescriptionResolver {
       notification,
     });
     await Notification.delete({
-      prescription_id: prescription.id,
-      action: "COMPLETE_PRESCRIPTION",
+      prescription,
+      action: NotificationAction["COMPLETE"],
     });
 
     return prescription;

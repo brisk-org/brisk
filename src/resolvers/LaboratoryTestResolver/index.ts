@@ -28,6 +28,7 @@ import {
   DELETE_NOTIFICATION,
   NEW_CREATE_LABORATORY_TEST,
 } from "../../constants/subscriptionTriggername";
+import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 
 @ObjectType()
 @Resolver()
@@ -79,29 +80,30 @@ export class LaboratoryTestResolver {
       throw new Error("Card Not Defined or was Deleted");
     }
 
-    const laboratoryTest = LaboratoryTest.create({
+    const laboratory_test = LaboratoryTest.create({
       result,
       card,
       price: totalPrice,
     });
 
-    card.laboratory_tests?.unshift(laboratoryTest);
+    card.laboratory_tests?.unshift(laboratory_test);
     await card.save();
-    await laboratoryTest.save();
+    await laboratory_test.save();
 
     const notification = await Notification.create({
-      laboratory_test_id: laboratoryTest.id,
-      action: "CREATE_LABORATORY_TEST",
-      desc: `A laboratory test For ${card.name} was just requested!`,
+      laboratory_test,
+      for: [Occupation["RECEPTION"]],
+      action: NotificationAction["CREATE"],
+      message: `A laboratory test For ${card.name} was just requested!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
 
     await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
-      laboratoryTest,
+      laboratoryTest: laboratory_test,
     });
 
-    return laboratoryTest;
+    return laboratory_test;
   }
   @Mutation(() => LaboratoryTest)
   async completeLaboratoryTest(
@@ -109,10 +111,10 @@ export class LaboratoryTestResolver {
     @Arg("result", () => String!) result: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const laboratoryTest = await LaboratoryTest.findOne(id, {
+    const laboratory_test = await LaboratoryTest.findOne(id, {
       relations: ["card"],
     });
-    if (!laboratoryTest) {
+    if (!laboratory_test) {
       return null;
     }
     await LaboratoryTest.update(
@@ -123,13 +125,14 @@ export class LaboratoryTestResolver {
       }
     );
     const notification = await Notification.create({
-      laboratory_test_id: laboratoryTest.id,
-      action: "COMPLETE_LABORATORY_TEST",
-      desc: `A laboratory test For ${laboratoryTest.card.name} was just completed!`,
+      laboratory_test,
+      for: [Occupation["DOCTOR"]],
+      action: NotificationAction["COMPLETE"],
+      message: `A laboratory test For ${laboratory_test.card.name} was just completed!`,
     }).save();
     const deleteNotification = await Notification.findOne({
       where: {
-        laboratory_test_id: laboratoryTest.id,
+        laboratory_test,
         action: "PAY_FOR_LABORATORY_TEST",
       },
     });
@@ -139,15 +142,15 @@ export class LaboratoryTestResolver {
       notification: deleteNotification,
     });
     await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
-      laboratoryTest,
+      laboratoryTest: laboratory_test,
     });
 
     await Notification.delete({
-      laboratory_test_id: laboratoryTest.id,
-      action: "CREATE_QUICK_LABORATORY_TEST",
+      laboratory_test,
+      action: NotificationAction["PAYMENT"],
     });
 
-    return laboratoryTest;
+    return laboratory_test;
   }
 
   @Mutation(() => LaboratoryTest)
@@ -174,24 +177,25 @@ export class LaboratoryTestResolver {
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const laboratoryTest = await LaboratoryTest.findOne(id, {
+    const laboratory_test = await LaboratoryTest.findOne(id, {
       relations: ["card"],
     });
-    if (!laboratoryTest) {
+    if (!laboratory_test) {
       return null;
     }
     await LaboratoryTest.update(id, { paid: true });
 
     const notification = await Notification.create({
-      laboratory_test_id: laboratoryTest.id,
-      action: "PAY_FOR_LABORATORY_TEST",
-      desc: ` ${laboratoryTest.card.name} just paid for the Laboratory Test!`,
+      laboratory_test,
+      action: NotificationAction["PAYMENT"],
+      for: [Occupation["LABORATORY"]],
+      message: ` ${laboratory_test.card.name} just paid for the Laboratory Test!`,
     }).save();
 
     const deleteNotification = await Notification.findOne({
       where: {
-        laboratory_test_id: laboratoryTest.id,
-        action: "CREATE_LABORATORY_TEST",
+        laboratory_test,
+        action: NotificationAction["CREATE"],
       },
     });
 
@@ -201,13 +205,13 @@ export class LaboratoryTestResolver {
     });
 
     await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
-      laboratoryTest,
+      laboratoryTest: laboratory_test,
     });
     await Notification.delete({
-      laboratory_test_id: laboratoryTest.id,
-      action: "CREATE_LABORATORY_TEST",
+      laboratory_test,
+      action: NotificationAction["CREATE"],
     });
-    return laboratoryTest;
+    return laboratory_test;
   }
   @Mutation(() => Boolean)
   async deleteLaboratoryTest(@Arg("id", () => ID!) id: number) {
@@ -227,8 +231,8 @@ export class LaboratoryTestResolver {
     }
     const notification = await Notification.findOne({
       where: {
-        laboratory_test_id: laboratory_test.id,
-        action: "COMPLETE_LABORATORY_TEST",
+        laboratory_test,
+        action: NotificationAction["COMPLETE"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -236,8 +240,8 @@ export class LaboratoryTestResolver {
     });
     await LaboratoryTest.update({ id }, { new: false });
     await Notification.delete({
-      laboratory_test_id: laboratory_test.id,
-      action: "COMPLETE_LABORATORY_TEST",
+      laboratory_test,
+      action: NotificationAction["COMPLETE"],
     });
 
     return laboratory_test;

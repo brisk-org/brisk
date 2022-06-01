@@ -12,6 +12,7 @@ import { LaboratoryTest } from "./LaboratoryTest";
 import { History } from "./History";
 import { CardSales } from "./CardSales";
 import { Prescription } from "./Prescription";
+import { Notification } from "./Notification";
 
 @ObjectType()
 @Entity()
@@ -29,6 +30,13 @@ export class Card extends BaseEntity {
     nullable: true,
   })
   prescriptions?: Prescription[];
+
+  @Field(() => [Notification], { nullable: true })
+  @OneToMany(() => Notification, (notification) => notification.card, {
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  notifications?: Notification[];
 
   @Field()
   @Column()

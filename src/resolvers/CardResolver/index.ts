@@ -24,6 +24,7 @@ import {
 } from "../../constants/subscriptionTriggername";
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
 import { GraphQLError } from "graphql";
+import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 
 @Resolver()
 export class CardsResolver {
@@ -119,9 +120,10 @@ export class CardsResolver {
     }).save();
 
     const notification = await Notification.create({
-      card_id: card.id,
-      action: "CREATE_CARD",
-      desc: `A card For ${card.name} was just created!`,
+      card,
+      for: [Occupation["ADMIN"], Occupation["DOCTOR"]],
+      action: NotificationAction["CREATE"],
+      message: `A card For ${card.name} was just created!`,
     }).save();
 
     await pubsub.publish(NEW_CARD_CREATED, { card });
@@ -173,9 +175,10 @@ export class CardsResolver {
     }
     await card.reload();
     const notification = await Notification.create({
-      card_id: card.id,
-      action: "MARK_CARD_AS_NEW",
-      desc: `${card.name} just visited us Again!`,
+      card,
+      action: NotificationAction["MARK_AS_NEW"],
+      for: [Occupation["ADMIN"], Occupation["DOCTOR"]],
+      message: `${card.name} just visited us Again!`,
     }).save();
 
     await pubsub.publish(NEW_CARD_CREATED, {
@@ -194,12 +197,12 @@ export class CardsResolver {
       return null;
     }
     const notification = await Notification.findOne({
-      where: { card_id: card.id },
+      where: { card },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
       notification,
     });
-    await Notification.delete({ card_id: card.id });
+    await Notification.delete({ card });
     await Card.update(id, { new: false });
     await card.reload();
     return card;

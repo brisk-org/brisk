@@ -6,7 +6,9 @@ import {
   CreateDateColumn,
   BaseEntity,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Notification } from "./Notification";
 
 @ObjectType()
 @Entity()
@@ -18,6 +20,17 @@ export class QuickPrescriptionTest extends BaseEntity {
   @Field()
   @Column()
   name!: string;
+
+  @Field(() => [Notification], { nullable: true })
+  @OneToMany(
+    () => Notification,
+    (notification) => notification.quick_prescription_test,
+    {
+      onDelete: "CASCADE",
+      nullable: true,
+    }
+  )
+  notifications?: Notification[];
 
   @Field()
   @Column({ default: 0 })

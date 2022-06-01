@@ -1,3 +1,4 @@
+import { NotificationAction, Occupation } from "../utils/EnumTypes";
 import { Field, ID, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -5,24 +6,13 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   Entity,
+  ManyToOne,
 } from "typeorm";
-
-type NotifAction =
-  | "PAY_FOR_LABORATORY_TEST"
-  | "PAY_FOR_PRESCRIPTION"
-  | "PAY_FOR_QUICK_LABORATORY_TEST"
-  | "PAY_FOR_QUICK_PRESCRIPTION_TEST"
-  | "CREATE_LABORATORY_TEST"
-  | "CREATE_PRESCRIPTION"
-  | "CREATE_CARD"
-  | "PRODUCT_CARD"
-  | "CREATE_QUICK_LABORATORY_TEST"
-  | "CREATE_QUICK_PRESCRIPTION_TEST"
-  | "MARK_CARD_AS_NEW"
-  | "COMPLETE_LABORATORY_TEST"
-  | "COMPLETE_QUICK_LABORATORY_TEST"
-  | "COMPLETE_QUICK_PRESCRIPTION_TEST"
-  | "COMPLETE_PRESCRIPTION";
+import { Prescription } from "./Prescription";
+import { LaboratoryTest } from "./LaboratoryTest";
+import { QuickPrescriptionTest } from "./QuickPrescriptionTest";
+import { QuickLaboratoryTest } from "./QuickLaboratoryTest";
+import { Card } from "./Card";
 
 @ObjectType()
 @Entity()
@@ -31,33 +21,59 @@ export class Notification extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Field()
-  @Column()
-  desc: string;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  card_id?: number;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  laboratory_test_id?: number;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  prescription_id?: number;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  quick_prescription_test_id?: number;
-
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  quick_laboratory_test_id?: number;
+  @Field(() => [Occupation])
+  @Column("varchar", { array: true })
+  for: Occupation[];
 
   @Field()
   @Column()
-  action: NotifAction;
+  message: string;
+
+  @Field(() => NotificationAction)
+  @Column()
+  action: NotificationAction;
+
+  @Field(() => Card, { nullable: true })
+  @ManyToOne(() => Card, (card) => card.notifications, {
+    nullable: true,
+  })
+  card?: Card;
+
+  @Field(() => LaboratoryTest, { nullable: true })
+  @ManyToOne(
+    () => LaboratoryTest,
+    (laboratoryTest) => laboratoryTest.notifications,
+    {
+      nullable: true,
+    }
+  )
+  laboratory_test?: LaboratoryTest;
+
+  @Field(() => Prescription, { nullable: true })
+  @ManyToOne(() => Prescription, (prescription) => prescription.notifications, {
+    nullable: true,
+  })
+  prescription?: Prescription;
+
+  @Field(() => QuickPrescriptionTest, { nullable: true })
+  @ManyToOne(
+    () => QuickPrescriptionTest,
+    (quickPrescription) => quickPrescription.notifications,
+    {
+      nullable: true,
+    }
+  )
+  quick_prescription_test?: QuickPrescriptionTest;
+
+  @Field(() => QuickLaboratoryTest, { nullable: true })
+  @ManyToOne(
+    () => QuickLaboratoryTest,
+    (quickLaboratoryTest) => quickLaboratoryTest.notifications,
+    {
+      nullable: true,
+    }
+  )
+  quick_laboratory_test?: QuickLaboratoryTest;
 
   @Field(() => String)
   @CreateDateColumn()

@@ -7,8 +7,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   BaseEntity,
+  OneToMany,
 } from "typeorm";
 import { Card } from "./Card";
+import { Notification } from "./Notification";
 
 @ObjectType()
 @Entity()
@@ -26,6 +28,17 @@ export class LaboratoryTest extends BaseEntity {
     onDelete: "CASCADE",
   })
   card!: Card;
+
+  @Field(() => [Notification], { nullable: true })
+  @OneToMany(
+    () => Notification,
+    (notification) => notification.laboratory_test,
+    {
+      onDelete: "CASCADE",
+      nullable: true,
+    }
+  )
+  notifications?: Notification[];
 
   @Field()
   @Column({ type: "json" })

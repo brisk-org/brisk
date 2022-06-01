@@ -24,6 +24,7 @@ import {
   NEW_CREATE_QUICK_LABORATORY_TEST,
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
+import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 @ObjectType()
 @Resolver()
 export class QuickLaboratoryTestResolver {
@@ -50,9 +51,10 @@ export class QuickLaboratoryTestResolver {
     }).save();
 
     const notification = await Notification.create({
-      quick_laboratory_test_id: quickLaboratoryTest?.id,
-      action: "CREATE_QUICK_LABORATORY_TEST",
-      desc: `A Quick Laboratory test For ${quickLaboratoryTest.name} was just requested!`,
+      quick_laboratory_test: quickLaboratoryTest,
+      for: [Occupation["LABORATORY"]],
+      action: NotificationAction["CREATE"],
+      message: `A Quick Laboratory test For ${quickLaboratoryTest.name} was just requested!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
@@ -82,17 +84,18 @@ export class QuickLaboratoryTestResolver {
     });
 
     const notification = await Notification.create({
-      quick_laboratory_test_id: quickLaboratoryTest?.id,
-      action: "COMPLETE_QUICK_LABORATORY_TEST",
-      desc: `A Quick Laboratory test For ${quickLaboratoryTest?.name} was just completed!`,
+      quick_laboratory_test: quickLaboratoryTest,
+      for: [Occupation["RECEPTION"]],
+      action: NotificationAction["COMPLETE"],
+      message: `A Quick Laboratory test For ${quickLaboratoryTest?.name} was just completed!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
 
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_laboratory_test_id: quickLaboratoryTest?.id,
-        action: "CREATE_QUICK_LABORATORY_TEST",
+        quick_laboratory_test: quickLaboratoryTest,
+        action: NotificationAction["CREATE"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -100,8 +103,8 @@ export class QuickLaboratoryTestResolver {
     });
 
     await Notification.delete({
-      quick_laboratory_test_id: quickLaboratoryTest?.id,
-      action: "CREATE_QUICK_LABORATORY_TEST",
+      quick_laboratory_test: quickLaboratoryTest,
+      action: NotificationAction["CREATE"],
     });
     return quickLaboratoryTest;
   }
@@ -120,16 +123,17 @@ export class QuickLaboratoryTestResolver {
       quickLaboratoryTest,
     });
     const notification = await Notification.create({
-      quick_laboratory_test_id: quickLaboratoryTest.id,
-      action: "PAY_FOR_QUICK_LABORATORY_TEST",
-      desc: `${quickLaboratoryTest?.name} just paid for a Quick Laboraoty Test!`,
+      quick_laboratory_test: quickLaboratoryTest,
+      for: [Occupation["DOCTOR"]],
+      action: NotificationAction["PAYMENT"],
+      message: `${quickLaboratoryTest?.name} just paid for a Quick Laboraoty Test!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_laboratory_test_id: quickLaboratoryTest?.id,
-        action: "COMPLETE_QUICK_LABORATORY_TEST",
+        quick_laboratory_test: quickLaboratoryTest,
+        action: NotificationAction["COMPLETE"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -137,8 +141,8 @@ export class QuickLaboratoryTestResolver {
     });
 
     await Notification.delete({
-      quick_laboratory_test_id: quickLaboratoryTest?.id,
-      action: "COMPLETE_QUICK_LABORATORY_TEST",
+      quick_laboratory_test: quickLaboratoryTest,
+      action: NotificationAction["COMPLETE"],
     });
 
     return quickLaboratoryTest;
@@ -156,8 +160,8 @@ export class QuickLaboratoryTestResolver {
     await quick_laboratory_test.reload();
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_laboratory_test_id: quick_laboratory_test.id,
-        action: "PAY_FOR_QUICK_LABORATORY_TEST",
+        quick_laboratory_test,
+        action: NotificationAction["PAYMENT"],
       },
     });
     await quick_laboratory_test.reload();
@@ -165,8 +169,8 @@ export class QuickLaboratoryTestResolver {
       notification: deleteNotification,
     });
     await Notification.delete({
-      quick_laboratory_test_id: quick_laboratory_test.id,
-      action: "PAY_FOR_QUICK_LABORATORY_TEST",
+      quick_laboratory_test,
+      action: NotificationAction["PAYMENT"],
     });
 
     await quick_laboratory_test.reload();

@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { Card } from "./Card";
 import { Medication } from "./Medication";
+import { Notification } from "./Notification";
 
 @ObjectType()
 @Entity()
@@ -32,8 +33,16 @@ export class Prescription extends BaseEntity {
   @Field(() => [Medication], { nullable: true })
   @OneToMany(() => Medication, (medication) => medication.prescription, {
     onDelete: "CASCADE",
+    nullable: true,
   })
   medications?: Medication[];
+
+  @Field(() => [Notification], { nullable: true })
+  @OneToMany(() => Notification, (notification) => notification.prescription, {
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  notifications?: Notification[];
 
   @Field()
   @Column()

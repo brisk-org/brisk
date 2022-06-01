@@ -24,6 +24,7 @@ import {
   NEW_CREATE_QUICK_PRESCRIPTION,
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
+import { NotificationAction, Occupation } from "../..//utils/EnumTypes";
 
 @ObjectType()
 @Resolver()
@@ -54,9 +55,10 @@ export class QuickPrescriptionResolver {
     await quickPrescriptionTest.save();
 
     const notification = await Notification.create({
-      quick_prescription_test_id: quickPrescriptionTest?.id,
-      action: "CREATE_QUICK_PRESCRIPTION_TEST",
-      desc: `A Quick Prescription test For ${quickPrescriptionTest.name} was just requested!`,
+      quick_prescription_test: quickPrescriptionTest,
+      action: NotificationAction["CREATE"],
+      for: [Occupation["NURSE"]],
+      message: `A Quick Prescription test For ${quickPrescriptionTest.name} was just requested!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
@@ -81,9 +83,10 @@ export class QuickPrescriptionResolver {
     await quickPrescriptionTest?.reload();
 
     const notification = await Notification.create({
-      quick_prescription_test_id: quickPrescriptionTest?.id,
-      action: "COMPLETE_QUICK_PRESCRIPTION_TEST",
-      desc: `A Quick Prescription test For ${quickPrescriptionTest?.name} was just completed!`,
+      quick_prescription_test: quickPrescriptionTest,
+      action: NotificationAction["COMPLETE"],
+      for: [Occupation["NURSE"], Occupation["DOCTOR"]],
+      message: `A Quick Prescription test For ${quickPrescriptionTest?.name} was just completed!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
@@ -93,8 +96,8 @@ export class QuickPrescriptionResolver {
     });
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_prescription_test_id: quickPrescriptionTest?.id,
-        action: "CREATE_QUICK_PRESCRIPTION_TEST",
+        quick_prescription_test: quickPrescriptionTest,
+        action: NotificationAction["CREATE"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -102,8 +105,8 @@ export class QuickPrescriptionResolver {
     });
 
     await Notification.delete({
-      quick_prescription_test_id: quickPrescriptionTest?.id,
-      action: "CREATE_QUICK_PRESCRIPTION_TEST",
+      quick_prescription_test: quickPrescriptionTest,
+      action: NotificationAction["CREATE"],
     });
 
     return quickPrescriptionTest;
@@ -125,17 +128,18 @@ export class QuickPrescriptionResolver {
       quickPrescriptionTest,
     });
     const notification = await Notification.create({
-      quick_prescription_test_id: quickPrescriptionTest.id,
-      action: "PAY_FOR_QUICK_PRESCRIPTION_TEST",
-      desc: `${quickPrescriptionTest.name} just paid for a Quick Laboraoty Test!`,
+      quick_prescription_test: quickPrescriptionTest,
+      for: [Occupation["NURSE"]],
+      action: NotificationAction["PAYMENT"],
+      message: `${quickPrescriptionTest.name} just paid for a Quick Laboraoty Test!`,
     }).save();
 
     await pubsub.publish(NEW_NOTIFICATION, { notification });
 
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_prescription_test_id: quickPrescriptionTest.id,
-        action: "COMPLETE_QUICK_PRESCRIPTION_TEST",
+        quick_prescription_test: quickPrescriptionTest,
+        action: NotificationAction["COMPLETE"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -143,8 +147,8 @@ export class QuickPrescriptionResolver {
     });
 
     await Notification.delete({
-      quick_prescription_test_id: quickPrescriptionTest.id,
-      action: "COMPLETE_QUICK_PRESCRIPTION_TEST",
+      quick_prescription_test: quickPrescriptionTest,
+      action: NotificationAction["COMPLETE"],
     });
 
     return quickPrescriptionTest;
@@ -163,16 +167,16 @@ export class QuickPrescriptionResolver {
 
     const deleteNotification = await Notification.findOne({
       where: {
-        quick_prescription_test_id: quickPrescriptionTest.id,
-        action: "PAY_FOR_QUICK_PRESCRIPTION_TEST",
+        quick_prescription_test: quickPrescriptionTest,
+        action: NotificationAction["PAYMENT"],
       },
     });
     await pubsub.publish(DELETE_NOTIFICATION, {
       notification: deleteNotification,
     });
     await Notification.delete({
-      quick_prescription_test_id: quickPrescriptionTest.id,
-      action: "PAY_FOR_QUICK_PRESCRIPTION_TEST",
+      quick_prescription_test: quickPrescriptionTest,
+      action: NotificationAction["PAYMENT"],
     });
     await quickPrescriptionTest.reload();
     return quickPrescriptionTest;
