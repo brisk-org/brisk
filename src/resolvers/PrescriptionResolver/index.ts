@@ -29,6 +29,7 @@ import {
 import { Notification } from "../../entities/Notification";
 import { CheckInInput } from "../MedicationResolver/InputType";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
+import { Medication } from "../../entities/Medication";
 
 @ObjectType()
 @Resolver()
@@ -71,7 +72,8 @@ export class PrescriptionResolver {
 
   @Mutation(() => Prescription)
   async createPrescription(
-    @Args() { price, cardId, rx }: CreatePrescriptionArgs,
+    @Args()
+    { price, cardId, medications: medicationArg, rx }: CreatePrescriptionArgs,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
@@ -80,9 +82,15 @@ export class PrescriptionResolver {
       throw new Error("Card Not Defined or was Deleted");
     }
 
+    const medications = Medication.create([...medicationArg]);
+
+    for (let i = 0; i < medications.length; i++) {
+      await medications[i].save();
+    }
     const prescription = Prescription.create({
       card,
       price,
+      medications,
       rx,
     });
 
@@ -159,24 +167,24 @@ export class PrescriptionResolver {
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescription = await Prescription.findOne(id, {
-      relations: ["card"],
+      relations: ["card", "medications"],
     });
-    if (!prescription) {
-      return null;
+    const medications = await Medication.find({
+      where: { prescription: { id } },
+    });
+    if (!medications) {
+      return;
     }
-
-    await Prescription.update(id, {
-      medications: prescription.medications?.map((medication, index) => ({
-        ...medication,
-        checkIn: checkIn[index],
-      })),
-    });
+    for (let i = 0; i < medications.length; i++) {
+      medications[i].checkIn = checkIn[i];
+      await medications[i].save();
+    }
 
     const notification = await Notification.create({
       prescription,
       action: NotificationAction["CHECK_IN"],
       for: [Occupation["NURSE"], Occupation["DOCTOR"]],
-      message: ` ${prescription.card.name} just paid for the Prescription Test!`,
+      message: ` ${prescription?.card.name} just paid for the Prescription Test!`,
     }).save();
     await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
       prescription,

@@ -110,9 +110,10 @@ export class CardsResolver {
   ): Promise<Card> {
     const cardPrice = await Settings.findOne(1).then((res) => res?.card_price);
 
+    if (!cardPrice) {
+      throw new GraphQLError("No price in the settings");
+    }
     const card = await Card.create({ ...profile }).save();
-
-    if (!cardPrice) throw new GraphQLError("No price in the settings");
 
     await CardSales.create({
       card,

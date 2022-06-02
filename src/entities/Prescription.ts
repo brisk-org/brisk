@@ -35,7 +35,7 @@ export class Prescription extends BaseEntity {
     onDelete: "CASCADE",
     nullable: true,
   })
-  medications?: Medication[];
+  medications: Medication[];
 
   @Field(() => [Notification], { nullable: true })
   @OneToMany(() => Notification, (notification) => notification.prescription, {

@@ -42,6 +42,10 @@ export class Medication extends BaseEntity {
   })
   medicine!: Medicine;
 
+  @Field()
+  @Column("medicineId")
+  medicineId!: string;
+
   @Field(() => Prescription)
   @ManyToOne(() => Prescription, (prescription) => prescription.medications, {
     onDelete: "CASCADE",

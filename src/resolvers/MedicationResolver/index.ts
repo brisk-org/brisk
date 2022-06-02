@@ -1,6 +1,5 @@
 import {
   Arg,
-  Args,
   Float,
   ID,
   Mutation,
@@ -8,12 +7,7 @@ import {
   Query,
   Resolver,
 } from "type-graphql";
-import { CreatePrescriptionMedicationArgs as CreateMedicationArgs } from "./InputType";
 import { Medication } from "../../entities/Medication";
-
-import { Medicine } from "../../entities/Medicine";
-import { ApolloError } from "apollo-server-express";
-import { Prescription } from "../../entities/Prescription";
 
 @ObjectType()
 @Resolver()
@@ -37,27 +31,27 @@ export class MedicationResolver {
     });
   }
   @Mutation(() => Medication)
-  async createMedication(@Args() medicationArgs: CreateMedicationArgs) {
-    const medicine = await Medicine.findOne(medicationArgs.medicineId);
-    const prescription = await Prescription.findOne(
-      medicationArgs.prescriptionId
-    );
-    if (!prescription) {
-      throw new ApolloError("Prescription doesn't exist");
-    }
-    if (!medicine) {
-      throw new ApolloError("No medicine found");
-    }
-    console.log("here", medicationArgs, "here");
-    const medication = Medication.create({
-      medicine,
-      prescription,
-      ...medicationArgs,
-    });
-    prescription.medications?.unshift(medication);
-    await prescription.save();
-    await medication.save();
-    return medication;
+  async createMedication() {
+    // const medicine = await Medicine.findOne();
+    // const prescription = await Prescription.findOne(
+    //   medicationArgs.prescriptionId
+    // );
+    // if (!prescription) {
+    //   throw new ApolloError("Prescription doesn't exist");
+    // }
+    // if (!medicine) {
+    //   throw new ApolloError("No medicine found");
+    // }
+    // console.log("here", medicationArgs, "here");
+    // const medication = Medication.create({
+    //   medicine,
+    //   prescription,
+    //   ...medicationArgs,
+    // });
+    // prescription.medications?.unshift(medication);
+    // await prescription.save();
+    // await medication.save();
+    // return medication;
   }
 
   @Mutation(() => Boolean)
