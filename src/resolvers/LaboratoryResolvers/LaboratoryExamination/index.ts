@@ -1,65 +1,65 @@
-import { LaboratoryTest } from "../../entities/LaboratoryTest";
 import {
-  Arg,
-  Ctx,
-  ID,
-  Mutation,
   ObjectType,
-  Query,
   Resolver,
+  Query,
+  Float,
+  Args,
+  Arg,
+  ID,
+  Ctx,
+  Mutation,
+  Subscription,
   PubSub,
   PubSubEngine,
   Root,
-  Subscription,
-  Float,
-  Args,
 } from "type-graphql";
-import { Card } from "../../entities/Card";
-import { CreateLaboratoryTestInput } from "./InputType";
-
+import Context from "../../../constants/Context";
+import {
+  NEW_NOTIFICATION,
+  NEW_CREATE_LABORATORY_TEST,
+  DELETE_NOTIFICATION,
+} from "../../../constants/subscriptionTriggername";
+import { Card } from "../../../entities/Card";
+import { LaboratoryExamination } from "../../../entities/LaboratoryExamination";
+import { LaboratoryTestRequest } from "../../../entities/LaboratoryTestRequest";
+import { Notification } from "../../../entities/Notification";
+import { Occupation, NotificationAction } from "../../../utils/EnumTypes";
 import {
   OffsetFieldsWithTime,
   SearchAndOffsetFields,
-} from "../../utils/SharedInputTypes/OffsetFields";
-import Context from "../../constants/Context";
-import { Notification } from "../../entities/Notification";
-import {
-  NEW_NOTIFICATION,
-  DELETE_NOTIFICATION,
-  NEW_CREATE_LABORATORY_TEST,
-} from "../../constants/subscriptionTriggername";
-import { NotificationAction, Occupation } from "../../utils/EnumTypes";
+} from "../../../utils/SharedInputTypes/OffsetFields";
+import { CreateLaboratoryTestInput } from "./InputTypes";
 
 @ObjectType()
 @Resolver()
-export class LaboratoryTestResolver {
+export class LaboratoryExaminationResolver {
   @Query(() => Float)
-  async laboratoryTestsCount(): Promise<number> {
-    return await LaboratoryTest.count();
+  async laboratoryExaminationCount(): Promise<number> {
+    return await LaboratoryExamination.count();
   }
-  @Query(() => [LaboratoryTest])
-  async laboratoryTests(@Args() { skip, take }: OffsetFieldsWithTime) {
-    return await LaboratoryTest.find({
+  @Query(() => [LaboratoryExamination])
+  async laboratoryExaminations(@Args() { skip, take }: OffsetFieldsWithTime) {
+    return await LaboratoryExamination.find({
       relations: ["card"],
       order: { updated_at: "DESC", id: "DESC" },
       skip,
       take,
     });
   }
-  @Query(() => LaboratoryTest)
-  async laboratoryTest(@Arg("id", () => ID!) id: number | string) {
-    return await LaboratoryTest.findOne(id, {
+  @Query(() => LaboratoryExamination)
+  async laboratoryExamination(@Arg("id", () => ID!) id: number | string) {
+    return await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
   }
 
-  @Query(() => [LaboratoryTest])
-  async searchLaboratoryTests(
+  @Query(() => [LaboratoryExamination])
+  async searchLaboratoryExamination(
     @Args() { term, skip, take }: SearchAndOffsetFields,
     @Ctx() { connection }: Context
-  ): Promise<LaboratoryTest[]> {
+  ): Promise<LaboratoryExamination[]> {
     return await connection
-      .getRepository(LaboratoryTest)
+      .getRepository(LaboratoryExamination)
       .createQueryBuilder("lab_test")
       .leftJoinAndSelect("lab_test.card", "card")
       .where("card.name ILIKE :name", { name: `%${term}%` })
@@ -69,9 +69,14 @@ export class LaboratoryTestResolver {
       .getMany();
   }
 
-  @Mutation(() => LaboratoryTest)
-  async createLaboratoryTest(
-    @Arg("input") { totalPrice, cardId, result }: CreateLaboratoryTestInput,
+  @Mutation(() => LaboratoryExamination)
+  async createLaboratoryExamination(
+    @Arg("input")
+    {
+      price,
+      cardId,
+      laboratoryTestRequest: laboratoryTestRequestArgs,
+    }: CreateLaboratoryTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
@@ -79,11 +84,18 @@ export class LaboratoryTestResolver {
     if (!card) {
       throw new Error("Card Not Defined or was Deleted");
     }
+    const laboratoryTestRequests = LaboratoryTestRequest.create([
+      ...laboratoryTestRequestArgs,
+    ]);
 
-    const laboratory_test = LaboratoryTest.create({
-      result,
+    for (let i = 0; i < laboratoryTestRequests.length; i++) {
+      await laboratoryTestRequests[i].save();
+    }
+
+    const laboratory_test = LaboratoryExamination.create({
+      laboratoryTestRequests,
       card,
-      price: totalPrice,
+      price,
     });
 
     card.laboratory_tests?.unshift(laboratory_test);
@@ -105,23 +117,24 @@ export class LaboratoryTestResolver {
 
     return laboratory_test;
   }
-  @Mutation(() => LaboratoryTest)
-  async completeLaboratoryTest(
+  @Mutation(() => LaboratoryExamination)
+  async completeLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @Arg("result", () => String!) result: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const laboratory_test = await LaboratoryTest.findOne(id, {
+    console.log(result);
+    const laboratory_test = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
     if (!laboratory_test) {
       return null;
     }
-    await LaboratoryTest.update(
+    await LaboratoryExamination.update(
       { id },
       {
         completed: true,
-        result,
+        // result,
       }
     );
     const notification = await Notification.create({
@@ -153,37 +166,38 @@ export class LaboratoryTestResolver {
     return laboratory_test;
   }
 
-  @Mutation(() => LaboratoryTest)
-  async saveLaboratoryTest(
+  @Mutation(() => LaboratoryExamination)
+  async saveLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @Arg("result", () => String!) result: string
   ) {
-    const laboratoryTest = await LaboratoryTest.findOne(id, {
+    console.log(result);
+    const laboratoryTest = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
     if (!laboratoryTest) {
       return null;
     }
-    await LaboratoryTest.update(
+    await LaboratoryExamination.update(
       { id },
       {
-        result,
+        // result,
       }
     );
     return laboratoryTest;
   }
-  @Mutation(() => LaboratoryTest)
-  async payForLaboratoryTest(
+  @Mutation(() => LaboratoryExamination)
+  async payForLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const laboratory_test = await LaboratoryTest.findOne(id, {
+    const laboratory_test = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
     if (!laboratory_test) {
       return null;
     }
-    await LaboratoryTest.update(id, { paid: true });
+    await LaboratoryExamination.update(id, { paid: true });
 
     const notification = await Notification.create({
       laboratory_test,
@@ -214,16 +228,16 @@ export class LaboratoryTestResolver {
     return laboratory_test;
   }
   @Mutation(() => Boolean)
-  async deleteLaboratoryTest(@Arg("id", () => ID!) id: number) {
-    await LaboratoryTest.delete(id);
+  async deleteLaboratoryExamination(@Arg("id", () => ID!) id: number) {
+    await LaboratoryExamination.delete(id);
     return true;
   }
-  @Mutation(() => LaboratoryTest)
-  async markLaboratoryTestAsSeen(
+  @Mutation(() => LaboratoryExamination)
+  async markLaboratoryExaminationAsSeen(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const laboratory_test = await LaboratoryTest.findOne(id, {
+    const laboratory_test = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
     if (!laboratory_test) {
@@ -238,7 +252,7 @@ export class LaboratoryTestResolver {
     await pubsub.publish(DELETE_NOTIFICATION, {
       notification,
     });
-    await LaboratoryTest.update({ id }, { new: false });
+    await LaboratoryExamination.update({ id }, { new: false });
     await Notification.delete({
       laboratory_test,
       action: NotificationAction["COMPLETE"],
@@ -246,12 +260,12 @@ export class LaboratoryTestResolver {
 
     return laboratory_test;
   }
-  @Subscription(() => LaboratoryTest, {
+  @Subscription(() => LaboratoryExamination, {
     topics: NEW_CREATE_LABORATORY_TEST,
   })
-  async newCreatedLaboratoryTest(
-    @Root() { laboratoryTest }: { laboratoryTest: LaboratoryTest }
-  ): Promise<LaboratoryTest> {
+  async newCreatedLaboratoryExamination(
+    @Root() { laboratoryTest }: { laboratoryTest: LaboratoryExamination }
+  ): Promise<LaboratoryExamination> {
     console.log(laboratoryTest, "sub");
     return laboratoryTest;
   }

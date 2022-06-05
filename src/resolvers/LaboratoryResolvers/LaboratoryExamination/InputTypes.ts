@@ -26,13 +26,22 @@ export class LaboratoryTestResult {
 }
 
 @InputType()
+class LaboratoryTestRequestInput {
+  @Field()
+  value: string;
+
+  @Field()
+  laboratoryTestId: string;
+}
+
+@InputType()
 export class CreateLaboratoryTestInput {
   @Field(() => ID!)
   cardId!: number;
 
   @Field()
-  totalPrice!: number;
+  price: number;
 
-  @Field(() => String!)
-  result!: string;
+  @Field(() => [LaboratoryTestRequestInput])
+  laboratoryTestRequest!: LaboratoryTestRequestInput[];
 }

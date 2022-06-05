@@ -9,56 +9,64 @@ import {
   BaseEntity,
   OneToMany,
 } from "typeorm";
-import { Card } from "./Card";
-import { Notification } from "./Notification";
+import { LaboratoryTestCategory } from "./LaboratoryTestCategory";
+import { LaboratoryTestRequest } from "./LaboratoryTestRequest";
 
 @ObjectType()
 @Entity()
 export class LaboratoryTest extends BaseEntity {
   @Field(() => ID!)
   @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Field()
-  @Column("cardId")
-  cardId!: number;
-
-  @Field(() => Card)
-  @ManyToOne(() => Card, (card) => card.laboratory_tests, {
-    onDelete: "CASCADE",
-  })
-  card!: Card;
-
-  @Field(() => [Notification], { nullable: true })
-  @OneToMany(
-    () => Notification,
-    (notification) => notification.laboratory_test,
-    {
-      onDelete: "CASCADE",
-      nullable: true,
-    }
-  )
-  notifications?: Notification[];
-
-  @Field()
-  @Column({ type: "json" })
-  result!: string;
-
-  @Field()
-  @Column({ default: false })
-  paid!: boolean;
+  id: number;
 
   @Field()
   @Column()
-  price!: number;
+  name: string;
+
+  @Field()
+  @Column()
+  normalValue: string;
+
+  @Field(() => [String])
+  @Column({ type: "simple-array", array: true })
+  commonValues: string[];
+
+  @Field(() => LaboratoryTest)
+  @ManyToOne(
+    () => LaboratoryTestCategory,
+    (laboratoryTestCategory) => laboratoryTestCategory.laboratoryTests
+  )
+  category: LaboratoryTestCategory;
+
+  @Field(() => LaboratoryTestCategory)
+  @ManyToOne(
+    () => LaboratoryTestCategory,
+    (laboratoryTestSubCateogry) => laboratoryTestSubCateogry.laboratoryTests
+  )
+  subCategory: LaboratoryTestCategory;
+
+  @Field(() => [LaboratoryTestRequest])
+  @OneToMany(
+    () => LaboratoryTestRequest,
+    (laboratoryTestRequest) => laboratoryTestRequest.laboratoryTest
+  )
+  laboratoryTestRequests: LaboratoryTestRequest[];
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  price?: number;
 
   @Field()
   @Column({ default: false })
-  completed!: boolean;
+  hasIndividualPrice: boolean;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  inStock?: number;
 
   @Field()
-  @Column({ default: true })
-  new!: boolean;
+  @Column({ default: false })
+  trackInStock: boolean;
 
   @Field(() => String)
   @CreateDateColumn()

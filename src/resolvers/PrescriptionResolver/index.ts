@@ -25,6 +25,7 @@ import {
   NEW_CREATE_PRESCRIPTION,
   DELETE_NOTIFICATION,
   NEW_NOTIFICATION,
+  UPDATE_PRESCRIPTION_CHECKIN,
 } from "../../constants/subscriptionTriggername";
 import { Notification } from "../../entities/Notification";
 import { CheckInInput } from "../MedicationResolver/InputType";
@@ -167,28 +168,32 @@ export class PrescriptionResolver {
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescription = await Prescription.findOne(id, {
-      relations: ["card", "medications"],
+      relations: ["card", "medications", "medications.medicine"],
     });
     const medications = await Medication.find({
       where: { prescription: { id } },
     });
-    if (!medications) {
+    if (!medications || !prescription) {
       return;
     }
     for (let i = 0; i < medications.length; i++) {
       medications[i].checkIn = checkIn[i];
       await medications[i].save();
     }
+    prescription.inrolled = true;
+    await prescription.save();
 
     const notification = await Notification.create({
       prescription,
       action: NotificationAction["CHECK_IN"],
       for: [Occupation["NURSE"], Occupation["DOCTOR"]],
-      message: ` ${prescription?.card.name} just paid for the Prescription Test!`,
+      message: ` ${prescription?.card.name} proceded with the CheckIn!`,
     }).save();
-    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+    console.log("this medication", medications, notification);
+    await pubsub.publish(UPDATE_PRESCRIPTION_CHECKIN, {
       prescription,
     });
+
     await pubsub.publish(NEW_NOTIFICATION, { notification });
 
     return prescription;
@@ -270,6 +275,14 @@ export class PrescriptionResolver {
       action: NotificationAction["COMPLETE"],
     });
 
+    return prescription;
+  }
+  @Subscription(() => Prescription, {
+    topics: UPDATE_PRESCRIPTION_CHECKIN,
+  })
+  async newMedicationUpdate(
+    @Root() { prescription }: { prescription: Prescription[] }
+  ): Promise<Prescription[]> {
     return prescription;
   }
   @Subscription(() => Prescription, {

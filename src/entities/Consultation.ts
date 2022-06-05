@@ -8,30 +8,16 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import { LaboratoryExamination } from "./LaboratoryExamination";
 import { History } from "./History";
 import { CardSales } from "./CardSales";
-import { Prescription } from "./Prescription";
 import { Notification } from "./Notification";
 
 @ObjectType()
 @Entity()
-export class Card extends BaseEntity {
+export class Consultaion extends BaseEntity {
   @Field(() => ID!)
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Field(() => [LaboratoryExamination], { nullable: true })
-  @OneToMany(() => LaboratoryExamination, (test) => test.card, {
-    nullable: true,
-  })
-  laboratory_tests?: LaboratoryExamination[];
-
-  @Field(() => [Prescription], { nullable: true })
-  @OneToMany(() => Prescription, (prescription) => prescription.card, {
-    nullable: true,
-  })
-  prescriptions?: Prescription[];
 
   @Field(() => [Notification], { nullable: true })
   @OneToMany(() => Notification, (notification) => notification.card, {

@@ -1,6 +1,11 @@
 import { NonEmptyArray } from "type-graphql";
 import { UserResolver } from "./UserResolver";
-import { LaboratoryTestResolver } from "./LaboratoryTestResolver";
+import {
+  LaboratoryExaminationResolver,
+  LaboratoryTestCategoryResolver,
+  LaboratoryTestResolver,
+  LaboratoryTestSubCategoryResolver,
+} from "./LaboratoryResolvers";
 import { SettingsResolver } from "./SettingsResolver";
 import { CardsResolver } from "./CardResolver";
 import { MedicineResolver } from "./MedicineResolver";
@@ -15,7 +20,10 @@ import { NotificationResolver } from "./NotificationResolver";
 export default [
   UserResolver,
   MedicineResolver,
+  LaboratoryExaminationResolver,
+  LaboratoryTestCategoryResolver,
   LaboratoryTestResolver,
+  LaboratoryTestSubCategoryResolver,
   SettingsResolver,
   CardsResolver,
   CardSalesResolver,

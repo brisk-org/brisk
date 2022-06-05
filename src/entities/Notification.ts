@@ -9,7 +9,7 @@ import {
   ManyToOne,
 } from "typeorm";
 import { Prescription } from "./Prescription";
-import { LaboratoryTest } from "./LaboratoryTest";
+import { LaboratoryExamination } from "./LaboratoryExamination";
 import { QuickPrescriptionTest } from "./QuickPrescriptionTest";
 import { QuickLaboratoryTest } from "./QuickLaboratoryTest";
 import { Card } from "./Card";
@@ -39,15 +39,15 @@ export class Notification extends BaseEntity {
   })
   card?: Card;
 
-  @Field(() => LaboratoryTest, { nullable: true })
+  @Field(() => LaboratoryExamination, { nullable: true })
   @ManyToOne(
-    () => LaboratoryTest,
+    () => LaboratoryExamination,
     (laboratoryTest) => laboratoryTest.notifications,
     {
       nullable: true,
     }
   )
-  laboratory_test?: LaboratoryTest;
+  laboratory_test?: LaboratoryExamination;
 
   @Field(() => Prescription, { nullable: true })
   @ManyToOne(() => Prescription, (prescription) => prescription.notifications, {
