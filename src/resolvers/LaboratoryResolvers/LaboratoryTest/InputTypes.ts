@@ -15,7 +15,10 @@ export class LaboratoryTestContentArgs {
   price?: number;
 
   @Field()
-  hasIndividualPrice: boolean;
+  hasPrice: boolean;
+
+  @Field()
+  isInfluencedByCategory: boolean;
 
   @Field({ nullable: true })
   inStock?: number;

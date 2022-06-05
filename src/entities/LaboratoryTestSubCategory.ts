@@ -34,7 +34,7 @@ export class LaboratoryTestSubCategory extends BaseEntity {
   @Field(() => LaboratoryTestCategory)
   @ManyToOne(
     () => LaboratoryTestCategory,
-    (laboratoryTest) => laboratoryTest.subCateogries
+    (laboratoryTest) => laboratoryTest.subCategories
   )
   category: LaboratoryTestCategory;
 

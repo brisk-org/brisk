@@ -25,7 +25,7 @@ export class LaboratoryExamination extends BaseEntity {
   cardId!: number;
 
   @Field(() => Card)
-  @ManyToOne(() => Card, (card) => card.laboratory_tests, {
+  @ManyToOne(() => Card, (card) => card.laboratoryExaminations, {
     onDelete: "CASCADE",
   })
   card!: Card;

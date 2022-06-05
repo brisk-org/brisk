@@ -22,13 +22,13 @@ export class LaboratoryTestCategoryResolver {
   }
 
   @Mutation(() => LaboratoryTestCategory)
-  async createLaboraotryTestCategory(
+  async createLaboratoryTestCategory(
     @Args()
     content: LaboratoryTestCategoryContentArgs
   ) {
     return await LaboratoryTestCategory.create({
       ...content,
-      subCateogries: [],
+      subCategories: [],
       laboratoryTests: [],
     }).save();
   }

@@ -40,7 +40,7 @@ export class LaboratoryTestCategory extends BaseEntity {
     (laboratoryTestSubCategory) => laboratoryTestSubCategory.category,
     { onDelete: "CASCADE" }
   )
-  subCateogries: LaboratoryTestSubCategory[];
+  subCategories: LaboratoryTestSubCategory[];
 
   @Field({ nullable: true })
   @Column({ nullable: true })

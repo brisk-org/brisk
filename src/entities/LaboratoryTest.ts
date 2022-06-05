@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { LaboratoryTestCategory } from "./LaboratoryTestCategory";
 import { LaboratoryTestRequest } from "./LaboratoryTestRequest";
+import { LaboratoryTestSubCategory } from "./LaboratoryTestSubCategory";
 
 @ObjectType()
 @Entity()
@@ -38,12 +39,12 @@ export class LaboratoryTest extends BaseEntity {
   )
   category: LaboratoryTestCategory;
 
-  @Field(() => LaboratoryTestCategory)
+  @Field(() => LaboratoryTestSubCategory)
   @ManyToOne(
-    () => LaboratoryTestCategory,
+    () => LaboratoryTestSubCategory,
     (laboratoryTestSubCateogry) => laboratoryTestSubCateogry.laboratoryTests
   )
-  subCategory: LaboratoryTestCategory;
+  subCategory: LaboratoryTestSubCategory;
 
   @Field(() => [LaboratoryTestRequest])
   @OneToMany(
@@ -58,7 +59,11 @@ export class LaboratoryTest extends BaseEntity {
 
   @Field()
   @Column({ default: false })
-  hasIndividualPrice: boolean;
+  hasPrice: boolean;
+
+  @Field()
+  @Column({ default: false })
+  isInfluencedByCategory: boolean;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

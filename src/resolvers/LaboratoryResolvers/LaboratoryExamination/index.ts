@@ -98,7 +98,7 @@ export class LaboratoryExaminationResolver {
       price,
     });
 
-    card.laboratory_tests?.unshift(laboratory_test);
+    card.laboratoryExaminations?.unshift(laboratory_test);
     await card.save();
     await laboratory_test.save();
 
