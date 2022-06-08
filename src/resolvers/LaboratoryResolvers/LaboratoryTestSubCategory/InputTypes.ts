@@ -7,4 +7,10 @@ export class LaboratoryTestSubCategoryContentArgs {
 
   @Field()
   price: number;
+
+  @Field({ nullable: true })
+  inStock?: number;
+
+  @Field()
+  trackInStock: boolean;
 }

@@ -27,6 +27,14 @@ export class LaboratoryTestSubCategory extends BaseEntity {
   @Column({ nullable: true })
   price?: number;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  inStock?: number;
+
+  @Field()
+  @Column({ default: false })
+  trackInStock: boolean;
+
   @Field(() => [LaboratoryTest])
   @OneToMany(() => LaboratoryTest, (laboratoryTest) => laboratoryTest.category)
   laboratoryTests: LaboratoryTest[];

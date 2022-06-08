@@ -28,9 +28,9 @@ export class LaboratoryTest extends BaseEntity {
   @Column()
   normalValue: string;
 
-  @Field(() => [String])
-  @Column({ type: "simple-array", array: true })
-  commonValues: string[];
+  @Field(() => [String], { nullable: true })
+  @Column({ type: "simple-array", array: true, nullable: true })
+  commonValues?: string[];
 
   @Field(() => LaboratoryTest)
   @ManyToOne(

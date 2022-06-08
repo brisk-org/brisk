@@ -1,19 +1,19 @@
 import { GraphQLError } from "graphql";
-import { ObjectType, Resolver, Args, Arg, ID, Mutation } from "type-graphql";
+import { ObjectType, Resolver, Arg, ID, Mutation } from "type-graphql";
 import { LaboratoryTest } from "../../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
-import { LaboratoryTestContentArgs } from "./InputTypes";
+import { LaboratoryTestContentInput } from "./InputTypes";
 
 @ObjectType()
 @Resolver()
 export class LaboratoryTestResolver {
   @Mutation(() => LaboratoryTest)
-  async createLaboraotryTest(
+  async createLaboratoryTest(
     @Arg("categoryId", () => ID!) categoryId: string,
-    @Arg("subCategoryId", () => ID!) subCategoryId: string,
-    @Args()
-    content: LaboratoryTestContentArgs
+    @Arg("subCategoryId", () => ID, { nullable: true })
+    subCategoryId: string | undefined,
+    @Arg("content") content: LaboratoryTestContentInput
   ) {
     const category = await LaboratoryTestCategory.findOne(categoryId);
     const subCategory = await LaboratoryTestSubCategory.findOne(subCategoryId);
@@ -29,7 +29,7 @@ export class LaboratoryTestResolver {
   @Mutation(() => LaboratoryTest)
   async updateLaboratoryTest(
     @Arg("id", () => ID!) id: number,
-    @Args() content: LaboratoryTestContentArgs
+    @Arg("content") content: LaboratoryTestContentInput
   ) {
     const laboratoryTest = await LaboratoryTest.findOne(id);
     if (!laboratoryTest) {

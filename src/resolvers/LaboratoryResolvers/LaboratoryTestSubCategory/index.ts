@@ -16,9 +16,9 @@ import { LaboratoryTestSubCategoryContentArgs } from "./InputTypes";
 @Resolver()
 export class LaboratoryTestSubCategoryResolver {
   @Query(() => [LaboratoryTestSubCategory])
-  async laboratoryTests() {
+  async laboratoryTestSubCategories() {
     return await LaboratoryTestSubCategory.find({
-      relations: ["laboratoryTests", "subCateogries"],
+      relations: ["laboratoryTests", "category"],
     });
   }
 

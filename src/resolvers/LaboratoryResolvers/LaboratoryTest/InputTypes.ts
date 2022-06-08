@@ -1,15 +1,15 @@
-import { Field, ArgsType } from "type-graphql";
+import { Field, InputType } from "type-graphql";
 
-@ArgsType()
-export class LaboratoryTestContentArgs {
+@InputType()
+export class LaboratoryTestContentInput {
   @Field()
   name: string;
 
   @Field()
   normalValue: string;
 
-  @Field(() => [String])
-  commonValues: string[];
+  @Field(() => [String], { nullable: true })
+  commonValues?: string[];
 
   @Field({ nullable: true })
   price?: number;

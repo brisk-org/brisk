@@ -17,7 +17,7 @@ export class LaboratoryTestCategoryResolver {
   @Query(() => [LaboratoryTestCategory])
   async laboratoryTestCategories() {
     return await LaboratoryTestCategory.find({
-      relations: ["laboratoryTests", "subCateogries"],
+      relations: ["laboratoryTests", "subCategories"],
     });
   }
 

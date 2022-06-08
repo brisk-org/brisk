@@ -5,8 +5,8 @@ export class LaboratoryTestCategoryContentArgs {
   @Field()
   name: string;
 
-  @Field()
-  price: number;
+  @Field({ nullable: true })
+  price?: number;
 
   @Field({ nullable: true })
   inStock?: number;
