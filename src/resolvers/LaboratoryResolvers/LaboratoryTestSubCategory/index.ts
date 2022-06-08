@@ -1,16 +1,8 @@
 import { GraphQLError } from "graphql";
-import {
-  ObjectType,
-  Resolver,
-  Query,
-  Args,
-  Arg,
-  ID,
-  Mutation,
-} from "type-graphql";
+import { ObjectType, Resolver, Query, Arg, ID, Mutation } from "type-graphql";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
-import { LaboratoryTestSubCategoryContentArgs } from "./InputTypes";
+import { LaboratoryTestSubCategoryContentInput } from "./InputTypes";
 
 @ObjectType()
 @Resolver()
@@ -25,8 +17,7 @@ export class LaboratoryTestSubCategoryResolver {
   @Mutation(() => LaboratoryTestSubCategory)
   async createLaboraotryTestSubCategory(
     @Arg("id", () => ID!) id: string,
-    @Args()
-    content: LaboratoryTestSubCategoryContentArgs
+    @Arg("content") content: LaboratoryTestSubCategoryContentInput
   ) {
     const category = await LaboratoryTestCategory.findOne(id);
     if (!category) {
@@ -41,7 +32,7 @@ export class LaboratoryTestSubCategoryResolver {
   @Mutation(() => LaboratoryTestSubCategory)
   async updateLaboratoryTestSubCategory(
     @Arg("id", () => ID!) id: number,
-    @Args() content: LaboratoryTestSubCategoryContentArgs
+    @Arg("content") content: LaboratoryTestSubCategoryContentInput
   ) {
     const subCategory = await LaboratoryTestSubCategory.findOne(id);
     if (!subCategory) {
