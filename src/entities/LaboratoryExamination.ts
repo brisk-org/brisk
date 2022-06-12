@@ -41,7 +41,7 @@ export class LaboratoryExamination extends BaseEntity {
   )
   notifications?: Notification[];
 
-  @Field(() => [LaboratoryTestRequest])
+  @Field(() => [LaboratoryTestRequest], { nullable: true })
   @OneToMany(
     () => LaboratoryTestRequest,
     (laboraotryTestRequest) => laboraotryTestRequest.laboratoryExamination,

@@ -2,6 +2,7 @@ import { NonEmptyArray } from "type-graphql";
 import { UserResolver } from "./UserResolver";
 import {
   LaboratoryExaminationResolver,
+  LaboratoryTestRequestResolver,
   LaboratoryTestCategoryResolver,
   LaboratoryTestResolver,
   LaboratoryTestSubCategoryResolver,
@@ -22,6 +23,7 @@ export default [
   MedicineResolver,
   LaboratoryExaminationResolver,
   LaboratoryTestCategoryResolver,
+  LaboratoryTestRequestResolver,
   LaboratoryTestResolver,
   LaboratoryTestSubCategoryResolver,
   SettingsResolver,

@@ -55,7 +55,10 @@ export class CardsResolver {
   async card(@Arg("id", () => ID!) id: number | string) {
     return await Card.findOne(id, {
       relations: [
-        "laboratory_tests",
+        "laboratoryExaminations",
+        "laboratoryExaminations.laboratoryTestRequests",
+        "laboratoryExaminations.laboratoryTestRequests.laboratoryTest",
+        "laboratoryExaminations.laboratoryTestRequests.laboratoryTest.category",
         "payment",
         "history",
         "prescriptions",

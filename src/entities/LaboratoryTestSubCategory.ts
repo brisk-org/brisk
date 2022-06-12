@@ -23,9 +23,9 @@ export class LaboratoryTestSubCategory extends BaseEntity {
   @Column()
   name: string;
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  price?: number;
+  @Field()
+  @Column()
+  price: number;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
@@ -36,7 +36,11 @@ export class LaboratoryTestSubCategory extends BaseEntity {
   trackInStock: boolean;
 
   @Field(() => [LaboratoryTest])
-  @OneToMany(() => LaboratoryTest, (laboratoryTest) => laboratoryTest.category)
+  @OneToMany(
+    () => LaboratoryTest,
+    (laboratoryTest) => laboratoryTest.subCategory,
+    { onDelete: "CASCADE" }
+  )
   laboratoryTests: LaboratoryTest[];
 
   @Field(() => LaboratoryTestCategory)

@@ -28,7 +28,10 @@ import {
   OffsetFieldsWithTime,
   SearchAndOffsetFields,
 } from "../../../utils/SharedInputTypes/OffsetFields";
-import { CreateLaboratoryTestInput } from "./InputTypes";
+import {
+  CompleteLaboratoryExaminationInput,
+  CreateLaboratoryExaminationArgs,
+} from "./InputTypes";
 
 @ObjectType()
 @Resolver()
@@ -40,7 +43,11 @@ export class LaboratoryExaminationResolver {
   @Query(() => [LaboratoryExamination])
   async laboratoryExaminations(@Args() { skip, take }: OffsetFieldsWithTime) {
     return await LaboratoryExamination.find({
-      relations: ["card"],
+      relations: [
+        "card",
+        "laboratoryTestRequests",
+        "laboratoryTestRequests.laboratoryTest",
+      ],
       order: { updated_at: "DESC", id: "DESC" },
       skip,
       take,
@@ -49,7 +56,11 @@ export class LaboratoryExaminationResolver {
   @Query(() => LaboratoryExamination)
   async laboratoryExamination(@Arg("id", () => ID!) id: number | string) {
     return await LaboratoryExamination.findOne(id, {
-      relations: ["card"],
+      relations: [
+        "card",
+        "laboratoryTestRequests",
+        "laboratoryTestRequests.laboratoryTest",
+      ],
     });
   }
 
@@ -71,12 +82,12 @@ export class LaboratoryExaminationResolver {
 
   @Mutation(() => LaboratoryExamination)
   async createLaboratoryExamination(
-    @Arg("input")
+    @Args()
     {
       price,
       cardId,
       laboratoryTestRequest: laboratoryTestRequestArgs,
-    }: CreateLaboratoryTestInput,
+    }: CreateLaboratoryExaminationArgs,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
@@ -87,23 +98,24 @@ export class LaboratoryExaminationResolver {
     const laboratoryTestRequests = LaboratoryTestRequest.create([
       ...laboratoryTestRequestArgs,
     ]);
+    console.log(laboratoryTestRequests);
 
     for (let i = 0; i < laboratoryTestRequests.length; i++) {
       await laboratoryTestRequests[i].save();
     }
 
-    const laboratory_test = LaboratoryExamination.create({
+    const laboratoryExamination = LaboratoryExamination.create({
       laboratoryTestRequests,
       card,
       price,
     });
 
-    card.laboratoryExaminations?.unshift(laboratory_test);
+    card.laboratoryExaminations?.unshift(laboratoryExamination);
     await card.save();
-    await laboratory_test.save();
+    await laboratoryExamination.save();
 
     const notification = await Notification.create({
-      laboratory_test,
+      laboratory_test: laboratoryExamination,
       for: [Occupation["RECEPTION"]],
       action: NotificationAction["CREATE"],
       message: `A laboratory test For ${card.name} was just requested!`,
@@ -112,24 +124,30 @@ export class LaboratoryExaminationResolver {
     await pubsub.publish(NEW_NOTIFICATION, { notification });
 
     await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
-      laboratoryTest: laboratory_test,
+      laboratoryTest: laboratoryExamination,
     });
 
-    return laboratory_test;
+    return laboratoryExamination;
   }
   @Mutation(() => LaboratoryExamination)
   async completeLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
-    @Arg("result", () => String!) result: string,
+    @Arg("content", () => [CompleteLaboratoryExaminationInput])
+    laboratoryRequestsArgs: CompleteLaboratoryExaminationInput[],
     @PubSub() pubsub: PubSubEngine
   ) {
-    console.log(result);
-    const laboratory_test = await LaboratoryExamination.findOne(id, {
+    const laboraotryExamination = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
-    if (!laboratory_test) {
+    if (!laboraotryExamination) {
       return null;
     }
+    for (let i = 0; i < laboratoryRequestsArgs.length; i++) {
+      await LaboratoryTestRequest.update(laboratoryRequestsArgs[i].id, {
+        value: laboratoryRequestsArgs[i].value,
+      });
+    }
+
     await LaboratoryExamination.update(
       { id },
       {
@@ -138,14 +156,14 @@ export class LaboratoryExaminationResolver {
       }
     );
     const notification = await Notification.create({
-      laboratory_test,
+      laboratory_test: laboraotryExamination,
       for: [Occupation["DOCTOR"]],
       action: NotificationAction["COMPLETE"],
-      message: `A laboratory test For ${laboratory_test.card.name} was just completed!`,
+      message: `A laboratory test For ${laboraotryExamination.card.name} was just completed!`,
     }).save();
     const deleteNotification = await Notification.findOne({
       where: {
-        laboratory_test,
+        laboratory_test: laboraotryExamination,
         action: "PAY_FOR_LABORATORY_TEST",
       },
     });
@@ -155,36 +173,39 @@ export class LaboratoryExaminationResolver {
       notification: deleteNotification,
     });
     await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
-      laboratoryTest: laboratory_test,
+      laboratoryTest: laboraotryExamination,
     });
 
     await Notification.delete({
-      laboratory_test,
+      laboratory_test: laboraotryExamination,
       action: NotificationAction["PAYMENT"],
     });
 
-    return laboratory_test;
+    return laboraotryExamination;
   }
 
   @Mutation(() => LaboratoryExamination)
   async saveLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
-    @Arg("result", () => String!) result: string
+    @Arg("content", () => [CompleteLaboratoryExaminationInput])
+    laboratoryRequestsArgs: CompleteLaboratoryExaminationInput[]
   ) {
-    console.log(result);
-    const laboratoryTest = await LaboratoryExamination.findOne(id, {
+    const laboratoryExamination = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
     });
-    if (!laboratoryTest) {
+    if (!laboratoryExamination) {
       return null;
     }
-    await LaboratoryExamination.update(
-      { id },
-      {
-        // result,
-      }
-    );
-    return laboratoryTest;
+    for (let i = 0; i < laboratoryRequestsArgs.length; i++) {
+      await LaboratoryTestRequest.update(laboratoryRequestsArgs[i].id, {
+        value: laboratoryRequestsArgs[i].value,
+      });
+    }
+    console.log(laboratoryExamination);
+    await laboratoryExamination.reload();
+    console.log(laboratoryExamination);
+
+    return laboratoryExamination;
   }
   @Mutation(() => LaboratoryExamination)
   async payForLaboratoryExamination(

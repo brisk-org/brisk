@@ -20,9 +20,17 @@ export class LaboratoryTestResolver {
     if (!category) {
       throw new GraphQLError("Found");
     }
+    if (subCategoryId) {
+      const laboratoryTest = await LaboratoryTest.create({
+        subCategory,
+        ...content,
+      }).save();
+      subCategory?.laboratoryTests?.unshift(laboratoryTest);
+      await subCategory?.save();
+      return laboratoryTest;
+    }
     return await LaboratoryTest.create({
       category,
-      subCategory,
       ...content,
     }).save();
   }

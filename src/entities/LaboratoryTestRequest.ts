@@ -36,9 +36,9 @@ export class LaboratoryTestRequest extends BaseEntity {
   )
   laboratoryExamination: LaboratoryExamination;
 
-  @Field()
-  @Column()
-  value: string;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  value?: string;
 
   @Field(() => String)
   @CreateDateColumn()

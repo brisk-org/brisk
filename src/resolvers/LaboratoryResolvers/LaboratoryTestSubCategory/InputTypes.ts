@@ -1,7 +1,7 @@
-import { Field, InputType } from "type-graphql";
+import { ArgsType, Field } from "type-graphql";
 
-@InputType()
-export class LaboratoryTestSubCategoryContentInput {
+@ArgsType()
+export class LaboratoryTestSubCategoryContentArgs {
   @Field()
   name: string;
 

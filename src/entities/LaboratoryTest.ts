@@ -32,19 +32,21 @@ export class LaboratoryTest extends BaseEntity {
   @Column({ type: "simple-array", array: true, nullable: true })
   commonValues?: string[];
 
-  @Field(() => LaboratoryTest)
+  @Field(() => LaboratoryTest, { nullable: true })
   @ManyToOne(
     () => LaboratoryTestCategory,
-    (laboratoryTestCategory) => laboratoryTestCategory.laboratoryTests
+    (laboratoryTestCategory) => laboratoryTestCategory.laboratoryTests,
+    { nullable: true }
   )
-  category: LaboratoryTestCategory;
+  category?: LaboratoryTestCategory;
 
-  @Field(() => LaboratoryTestSubCategory)
+  @Field(() => LaboratoryTestSubCategory, { nullable: true })
   @ManyToOne(
     () => LaboratoryTestSubCategory,
-    (laboratoryTestSubCateogry) => laboratoryTestSubCateogry.laboratoryTests
+    (laboratoryTestSubCateogry) => laboratoryTestSubCateogry.laboratoryTests,
+    { nullable: true }
   )
-  subCategory: LaboratoryTestSubCategory;
+  subCategory?: LaboratoryTestSubCategory;
 
   @Field(() => [LaboratoryTestRequest])
   @OneToMany(

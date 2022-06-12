@@ -1,4 +1,4 @@
-import { InputType, Field, ID } from "type-graphql";
+import { InputType, Field, ID, ArgsType } from "type-graphql";
 
 @InputType()
 export class LaboratoryTestInput {
@@ -28,14 +28,11 @@ export class LaboratoryTestResult {
 @InputType()
 class LaboratoryTestRequestInput {
   @Field()
-  value: string;
-
-  @Field()
   laboratoryTestId: string;
 }
 
-@InputType()
-export class CreateLaboratoryTestInput {
+@ArgsType()
+export class CreateLaboratoryExaminationArgs {
   @Field(() => ID!)
   cardId!: number;
 
@@ -44,4 +41,12 @@ export class CreateLaboratoryTestInput {
 
   @Field(() => [LaboratoryTestRequestInput])
   laboratoryTestRequest!: LaboratoryTestRequestInput[];
+}
+
+@InputType()
+export class CompleteLaboratoryExaminationInput {
+  @Field(() => ID!)
+  id: string;
+  @Field()
+  value: string;
 }
