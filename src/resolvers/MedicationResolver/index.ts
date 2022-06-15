@@ -30,30 +30,6 @@ export class MedicationResolver {
       relations: ["medicine", "prescription"],
     });
   }
-  @Mutation(() => Medication)
-  async createMedication() {
-    // const medicine = await Medicine.findOne();
-    // const prescription = await Prescription.findOne(
-    //   medicationArgs.prescriptionId
-    // );
-    // if (!prescription) {
-    //   throw new ApolloError("Prescription doesn't exist");
-    // }
-    // if (!medicine) {
-    //   throw new ApolloError("No medicine found");
-    // }
-    // console.log("here", medicationArgs, "here");
-    // const medication = Medication.create({
-    //   medicine,
-    //   prescription,
-    //   ...medicationArgs,
-    // });
-    // prescription.medications?.unshift(medication);
-    // await prescription.save();
-    // await medication.save();
-    // return medication;
-  }
-
   @Mutation(() => Boolean)
   async deleteMedication(@Arg("id", () => ID!) id: number) {
     return (await Medication.delete(id)).affected;

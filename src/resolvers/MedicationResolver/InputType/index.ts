@@ -8,13 +8,22 @@ export class CheckInStatusInput {
   isCompleted: boolean;
 }
 @InputType()
-export class CheckInInput {
+class CheckInInput {
   @Field()
   date: string;
   @Field()
   price: number;
   @Field(() => [CheckInStatusInput])
   status: CheckInStatusInput[];
+}
+
+@InputType()
+export class MedicationsCheckInInput {
+  @Field()
+  name: string;
+
+  @Field(() => [CheckInInput])
+  checkIn: CheckInInput[];
 }
 
 // @InputType()

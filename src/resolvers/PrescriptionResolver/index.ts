@@ -28,7 +28,7 @@ import {
   UPDATE_PRESCRIPTION_CHECKIN,
 } from "../../constants/subscriptionTriggername";
 import { Notification } from "../../entities/Notification";
-import { CheckInInput } from "../MedicationResolver/InputType";
+import { MedicationsCheckInInput } from "../MedicationResolver/InputType";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 import { Medication } from "../../entities/Medication";
 
@@ -164,7 +164,8 @@ export class PrescriptionResolver {
   @Mutation(() => Prescription)
   async updatePrescriptionCheckIn(
     @Arg("id", () => ID!) id: number,
-    @Arg("checkIn", () => [[CheckInInput]]) checkIn: CheckInInput[][],
+    @Arg("checkIn", () => [MedicationsCheckInInput])
+    medicationsCheckIn: MedicationsCheckInInput[],
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescription = await Prescription.findOne(id, {
@@ -177,10 +178,25 @@ export class PrescriptionResolver {
       return;
     }
     for (let i = 0; i < medications.length; i++) {
-      medications[i].checkIn = checkIn[i];
+      medicationsCheckIn.forEach((medicationCheckIn) => {
+        if (medications[i].medicine.name !== medicationCheckIn.name) return;
+        medications[i].checkIn = medicationCheckIn.checkIn;
+      });
       await medications[i].save();
     }
-    prescription.inrolled = true;
+    const completed = medicationsCheckIn.every(({ checkIn }) =>
+      checkIn.every((checkIn) =>
+        checkIn.status.every((status) => status.isCompleted)
+      )
+    );
+    const paid = medicationsCheckIn.every(({ checkIn }) =>
+      checkIn.every((checkIn) =>
+        checkIn.status.every((status) => status.isPaid)
+      )
+    );
+    prescription.inrolled = !(paid && completed);
+    prescription.completed = completed;
+    prescription.paid = paid;
     await prescription.save();
 
     const notification = await Notification.create({
@@ -189,7 +205,6 @@ export class PrescriptionResolver {
       for: [Occupation["NURSE"], Occupation["DOCTOR"]],
       message: ` ${prescription?.card.name} proceded with the CheckIn!`,
     }).save();
-    console.log("this medication", medications, notification);
     await pubsub.publish(UPDATE_PRESCRIPTION_CHECKIN, {
       prescription,
     });
