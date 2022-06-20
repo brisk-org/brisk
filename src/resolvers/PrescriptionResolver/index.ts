@@ -164,7 +164,7 @@ export class PrescriptionResolver {
   @Mutation(() => Prescription)
   async updatePrescriptionCheckIn(
     @Arg("id", () => ID!) id: number,
-    @Arg("checkIn", () => [MedicationsCheckInInput])
+    @Arg("medicationsCheckIn", () => [MedicationsCheckInInput])
     medicationsCheckIn: MedicationsCheckInInput[],
     @PubSub() pubsub: PubSubEngine
   ) {
@@ -173,6 +173,7 @@ export class PrescriptionResolver {
     });
     const medications = await Medication.find({
       where: { prescription: { id } },
+      relations: ["medicine"],
     });
     if (!medications || !prescription) {
       return;

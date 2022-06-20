@@ -17,6 +17,8 @@ class CheckInStatus {
   @Field()
   isPaid: boolean;
   @Field()
+  paidAt: string;
+  @Field()
   isCompleted: boolean;
 }
 @ObjectType()

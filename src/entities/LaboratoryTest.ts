@@ -44,7 +44,7 @@ export class LaboratoryTest extends BaseEntity {
   @ManyToOne(
     () => LaboratoryTestSubCategory,
     (laboratoryTestSubCateogry) => laboratoryTestSubCateogry.laboratoryTests,
-    { nullable: true }
+    { nullable: true, onDelete: "CASCADE" }
   )
   subCategory?: LaboratoryTestSubCategory;
 

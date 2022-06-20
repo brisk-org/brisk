@@ -5,10 +5,12 @@ export class CheckInStatusInput {
   @Field()
   isPaid: boolean;
   @Field()
+  paidAt: string;
+  @Field()
   isCompleted: boolean;
 }
 @InputType()
-class CheckInInput {
+export class CheckInInput {
   @Field()
   date: string;
   @Field()

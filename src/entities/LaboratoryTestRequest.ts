@@ -25,7 +25,8 @@ export class LaboratoryTestRequest extends BaseEntity {
   @Field(() => LaboratoryTest)
   @ManyToOne(
     () => LaboratoryTest,
-    (laboratoryTest) => laboratoryTest.laboratoryTestRequests
+    (laboratoryTest) => laboratoryTest.laboratoryTestRequests,
+    { onDelete: "CASCADE" }
   )
   laboratoryTest: LaboratoryTest;
 

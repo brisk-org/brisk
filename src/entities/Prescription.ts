@@ -39,7 +39,6 @@ export class Prescription extends BaseEntity {
 
   @Field(() => [Notification], { nullable: true })
   @OneToMany(() => Notification, (notification) => notification.prescription, {
-    onDelete: "CASCADE",
     nullable: true,
   })
   notifications?: Notification[];
