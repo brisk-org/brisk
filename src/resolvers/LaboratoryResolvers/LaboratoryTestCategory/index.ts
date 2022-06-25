@@ -22,6 +22,7 @@ export class LaboratoryTestCategoryResolver {
         "subCategories",
         "subCategories.laboratoryTests",
       ],
+      order: { id: "ASC" },
     });
   }
 

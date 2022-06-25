@@ -44,7 +44,6 @@ export class LaboratoryTestResolver {
       throw new GraphQLError("No category Found");
     }
     await LaboratoryTest.update(id, { ...content });
-    await laboratoryTest.reload();
 
     return laboratoryTest;
   }

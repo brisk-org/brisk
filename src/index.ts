@@ -73,14 +73,6 @@ const main = async function () {
     res.cookie("jwt-access", tokens.accessToken);
     next();
   });
-  // app.use((_, res, next) => {
-  //   res.setHeader("Access-Control-Allow-Origin", "*");
-  //   res.header(
-  //     "Access-Control-Allow-Headers",
-  //     "Origin, X-Requested-With, Content-Type, Accept"
-  //   );
-  //   next();
-  // });
 
   const httpServer = http.createServer(app);
   server.applyMiddleware({ app });

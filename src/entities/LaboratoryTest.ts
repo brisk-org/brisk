@@ -7,8 +7,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   BaseEntity,
-  OneToMany,
 } from "typeorm";
+import { LaboratoryExamination } from "./LaboratoryExamination";
 import { LaboratoryTestCategory } from "./LaboratoryTestCategory";
 import { LaboratoryTestRequest } from "./LaboratoryTestRequest";
 import { LaboratoryTestSubCategory } from "./LaboratoryTestSubCategory";
@@ -49,11 +49,11 @@ export class LaboratoryTest extends BaseEntity {
   subCategory?: LaboratoryTestSubCategory;
 
   @Field(() => [LaboratoryTestRequest])
-  @OneToMany(
-    () => LaboratoryTestRequest,
-    (laboratoryTestRequest) => laboratoryTestRequest.laboratoryTest
+  @ManyToOne(
+    () => LaboratoryExamination,
+    (laboratoryExamination) => laboratoryExamination.laboratoryTests
   )
-  laboratoryTestRequests: LaboratoryTestRequest[];
+  laboratoryTestExaminations: LaboratoryExamination[];
 
   @Field({ nullable: true })
   @Column({ nullable: true })

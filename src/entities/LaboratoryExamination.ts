@@ -10,9 +10,16 @@ import {
   OneToMany,
 } from "typeorm";
 import { Card } from "./Card";
-import { LaboratoryTestRequest } from "./LaboratoryTestRequest";
+import { LaboratoryTest } from "./LaboratoryTest";
 import { Notification } from "./Notification";
 
+@ObjectType()
+class LaboratoryExaminationValue {
+  @Field(() => ID)
+  id: string;
+  @Field()
+  value: string;
+}
 @ObjectType()
 @Entity()
 export class LaboratoryExamination extends BaseEntity {
@@ -41,16 +48,19 @@ export class LaboratoryExamination extends BaseEntity {
   )
   notifications?: Notification[];
 
-  @Field(() => [LaboratoryTestRequest], { nullable: true })
+  @Field(() => [LaboratoryTest])
   @OneToMany(
-    () => LaboratoryTestRequest,
-    (laboraotryTestRequest) => laboraotryTestRequest.laboratoryExamination,
+    () => LaboratoryTest,
+    (laboraotryTestRequest) => laboraotryTestRequest.laboratoryTestExaminations,
     {
       onDelete: "CASCADE",
-      nullable: true,
     }
   )
-  laboratoryTestRequests?: LaboratoryTestRequest[];
+  laboratoryTests: LaboratoryTest[];
+
+  @Field(() => [LaboratoryExaminationValue], { nullable: true })
+  @Column({ type: "json", nullable: true })
+  values?: LaboratoryExaminationValue[];
 
   @Field()
   @Column({ default: false })

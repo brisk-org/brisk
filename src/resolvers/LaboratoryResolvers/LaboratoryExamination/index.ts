@@ -21,6 +21,8 @@ import {
 } from "../../../constants/subscriptionTriggername";
 import { Card } from "../../../entities/Card";
 import { LaboratoryExamination } from "../../../entities/LaboratoryExamination";
+import { LaboratoryTest } from "../../../entities/LaboratoryTest";
+import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestRequest } from "../../../entities/LaboratoryTestRequest";
 import { Notification } from "../../../entities/Notification";
 import { Occupation, NotificationAction } from "../../../utils/EnumTypes";
@@ -43,11 +45,7 @@ export class LaboratoryExaminationResolver {
   @Query(() => [LaboratoryExamination])
   async laboratoryExaminations(@Args() { skip, take }: OffsetFieldsWithTime) {
     return await LaboratoryExamination.find({
-      relations: [
-        "card",
-        "laboratoryTestRequests",
-        "laboratoryTestRequests.laboratoryTest",
-      ],
+      relations: ["card", "laboratoryTests"],
       order: { updated_at: "DESC", id: "DESC" },
       skip,
       take,
@@ -56,11 +54,7 @@ export class LaboratoryExaminationResolver {
   @Query(() => LaboratoryExamination)
   async laboratoryExamination(@Arg("id", () => ID!) id: number | string) {
     return await LaboratoryExamination.findOne(id, {
-      relations: [
-        "card",
-        "laboratoryTestRequests",
-        "laboratoryTestRequests.laboratoryTest",
-      ],
+      relations: ["card", "laboratoryTests", "laboratoryTests.category"],
     });
   }
 
@@ -86,26 +80,39 @@ export class LaboratoryExaminationResolver {
     {
       price,
       cardId,
-      laboratoryTestRequest: laboratoryTestRequestArgs,
+      laboratoryTest: laboratoryTestArgs,
+      selectedCategories,
     }: CreateLaboratoryExaminationArgs,
     @PubSub() pubsub: PubSubEngine
   ) {
     const card = await Card.findOne(cardId);
+    const laboratoryTest = await LaboratoryTest.findByIds(laboratoryTestArgs);
 
     if (!card) {
       throw new Error("Card Not Defined or was Deleted");
     }
-    const laboratoryTestRequests = LaboratoryTestRequest.create([
-      ...laboratoryTestRequestArgs,
-    ]);
-    console.log(laboratoryTestRequests);
 
-    for (let i = 0; i < laboratoryTestRequests.length; i++) {
-      await laboratoryTestRequests[i].save();
+    for (let i = 0; i < laboratoryTestArgs.length; i++) {
+      const labTest = await LaboratoryTest.findOne(laboratoryTestArgs[i].id);
+      if (labTest && labTest?.trackInStock && labTest.inStock) {
+        labTest.inStock = labTest.inStock - 1;
+        await labTest.save();
+      }
+    }
+    if (selectedCategories) {
+      for (let i = 0; i < selectedCategories?.length; i++) {
+        const category = await LaboratoryTestCategory.findOne(
+          selectedCategories[i]
+        );
+        if (category && category.trackInStock && category.inStock) {
+          category.inStock = category.inStock - 1;
+          await category.save();
+        }
+      }
     }
 
     const laboratoryExamination = LaboratoryExamination.create({
-      laboratoryTestRequests,
+      laboratoryTests: laboratoryTest,
       card,
       price,
     });
@@ -133,7 +140,7 @@ export class LaboratoryExaminationResolver {
   async completeLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @Arg("content", () => [CompleteLaboratoryExaminationInput])
-    laboratoryRequestsArgs: CompleteLaboratoryExaminationInput[],
+    laboratoryTestContent: CompleteLaboratoryExaminationInput[],
     @PubSub() pubsub: PubSubEngine
   ) {
     const laboraotryExamination = await LaboratoryExamination.findOne(id, {
@@ -142,15 +149,16 @@ export class LaboratoryExaminationResolver {
     if (!laboraotryExamination) {
       return null;
     }
-    for (let i = 0; i < laboratoryRequestsArgs.length; i++) {
-      await LaboratoryTestRequest.update(laboratoryRequestsArgs[i].id, {
-        value: laboratoryRequestsArgs[i].value,
-      });
-    }
+    // for (let i = 0; i < laboratoryTestContent.length; i++) {
+    //   await LaboratoryTestRequest.update(laboratoryTestContent[i].id, {
+    //     value: laboratoryTestContent[i].value,
+    //   });
+    // }
 
     await LaboratoryExamination.update(
       { id },
       {
+        values: laboratoryTestContent,
         completed: true,
         // result,
       }
@@ -201,9 +209,7 @@ export class LaboratoryExaminationResolver {
         value: laboratoryRequestsArgs[i].value,
       });
     }
-    console.log(laboratoryExamination);
     await laboratoryExamination.reload();
-    console.log(laboratoryExamination);
 
     return laboratoryExamination;
   }
@@ -287,7 +293,6 @@ export class LaboratoryExaminationResolver {
   async newCreatedLaboratoryExamination(
     @Root() { laboratoryTest }: { laboratoryTest: LaboratoryExamination }
   ): Promise<LaboratoryExamination> {
-    console.log(laboratoryTest, "sub");
     return laboratoryTest;
   }
 }

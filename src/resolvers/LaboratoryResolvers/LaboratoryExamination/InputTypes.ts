@@ -26,9 +26,9 @@ export class LaboratoryTestResult {
 }
 
 @InputType()
-class LaboratoryTestRequestInput {
+class LaboratoryTestIdInput {
   @Field()
-  laboratoryTestId: string;
+  id: string;
 }
 
 @ArgsType()
@@ -39,8 +39,11 @@ export class CreateLaboratoryExaminationArgs {
   @Field()
   price: number;
 
-  @Field(() => [LaboratoryTestRequestInput])
-  laboratoryTestRequest!: LaboratoryTestRequestInput[];
+  @Field(() => [LaboratoryTestIdInput])
+  laboratoryTest: LaboratoryTestIdInput[];
+
+  @Field(() => [ID], { nullable: true })
+  selectedCategories?: string[];
 }
 
 @InputType()

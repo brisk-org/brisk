@@ -56,9 +56,8 @@ export class CardsResolver {
     return await Card.findOne(id, {
       relations: [
         "laboratoryExaminations",
-        "laboratoryExaminations.laboratoryTestRequests",
-        "laboratoryExaminations.laboratoryTestRequests.laboratoryTest",
-        "laboratoryExaminations.laboratoryTestRequests.laboratoryTest.category",
+        "laboratoryExaminations.laboratoryTests",
+        "laboratoryExaminations.laboratoryTests.category",
         "payment",
         "history",
         "prescriptions",

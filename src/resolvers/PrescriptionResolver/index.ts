@@ -118,7 +118,6 @@ export class PrescriptionResolver {
   @Mutation(() => Prescription)
   async markPrescriptionAsCompleted(
     @Arg("id", () => ID!) id: number,
-    @Arg("completed") completed: boolean,
     @PubSub() pubsub: PubSubEngine
   ) {
     const prescription = await Prescription.findOne(id, {
@@ -130,7 +129,8 @@ export class PrescriptionResolver {
     await Prescription.update(
       { id },
       {
-        completed,
+        completed: true,
+        inrolled: false
       }
     );
     const notification = await Notification.create({

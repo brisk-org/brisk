@@ -13,7 +13,6 @@ import { Medication } from "./Medication";
 import { Medicine } from "./Medicine";
 import { LaboratoryTest } from "./LaboratoryTest";
 import { LaboratoryTestCategory } from "./LaboratoryTestCategory";
-import { LaboratoryTestRequest } from "./LaboratoryTestRequest";
 import { LaboratoryTestSubCategory } from "./LaboratoryTestSubCategory";
 
 export default [
@@ -22,7 +21,6 @@ export default [
   LaboratoryExamination,
   LaboratoryTest,
   LaboratoryTestCategory,
-  LaboratoryTestRequest,
   LaboratoryTestSubCategory,
   History,
   Prescription,
