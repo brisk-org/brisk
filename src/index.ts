@@ -15,12 +15,14 @@ import { createTokens } from "./utils/createTokens";
 import { authChecker } from "./functions/authChecker";
 import fileUpload from "express-fileupload";
 import connection from "../ormconfig";
+import seed from "./utils/seed";
 
 const app = express();
 
 const main = async function () {
   await createConnection(connection);
 
+  await seed();
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());

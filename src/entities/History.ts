@@ -29,10 +29,6 @@ export class History extends BaseEntity {
   @Column({ type: "json" })
   result: string;
 
-  @Field(() => [String], { nullable: true })
-  @Column({ type: "simple-array", nullable: true })
-  file_path?: string[];
-
   @Field(() => String)
   @CreateDateColumn()
   created_at: Date;

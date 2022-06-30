@@ -1,0 +1,53 @@
+import { Connection } from "typeorm";
+import { Card } from "../../entities/Card";
+import { LaboratoryExamination } from "../../entities/LaboratoryExamination";
+import { LaboratoryTest } from "../../entities/LaboratoryTest";
+import { LaboratoryTestCategory } from "../../entities/LaboratoryTestCategory";
+
+const categries = [
+  "Hematology",
+  "Serology",
+  "STOOL TEST",
+  "Urinalysis",
+  "Microscopy",
+  "Hormone Test",
+  "Bacteriology",
+  "Clinical Chemistry",
+];
+export default async (connection: Connection) => {
+  const setting = await connection.query(
+    'select * from "settings" where "id" = 1'
+  );
+  let err = 0;
+
+  for (let i = 0; i < categries.length; i++) {
+    await LaboratoryTestCategory.create({
+      name: categries[i],
+      inStock: 0,
+      trackInStock: false,
+      price: 0,
+    }).save();
+  }
+
+  for (let i = 0; i < setting[0].laboratory_tests_data.length; i++) {
+    const parsedData = JSON.parse(setting[0].laboratory_tests_data)[i];
+    const category = await LaboratoryTestCategory.findOne({
+      where: { name: parsedData.category },
+    });
+    if (!category) {
+      throw new Error(`NO category yaaaosdofksldj ${parsedData.category}`);
+    }
+    await LaboratoryTest.create({
+      category,
+      name: parsedData.name,
+      price: parsedData.price,
+      normalValue: parsedData.normalValue || "",
+    }).save();
+    console.log(
+      await (
+        await LaboratoryTest.find()
+      ).length,
+      JSON.parse(setting[0].laboratory_tests_data).length
+    );
+  }
+};
