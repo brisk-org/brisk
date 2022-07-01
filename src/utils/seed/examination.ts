@@ -12,6 +12,8 @@ export default async (connection: Connection) => {
       price,
       new: isNew,
       result,
+      created_at,
+      updated_at,
     } = examination[i];
     const labName = (JSON.parse(result) as any[]).map((result) => result.name);
     console.log(labName, "labNmae");
@@ -26,6 +28,8 @@ export default async (connection: Connection) => {
       price,
       new: isNew,
       laboratoryTests,
+      created_at,
+      updated_at,
     }).save();
     console.log(
       (await LaboratoryExamination.find()).length,

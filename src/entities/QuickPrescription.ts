@@ -9,10 +9,11 @@ import {
   OneToMany,
 } from "typeorm";
 import { Notification } from "./Notification";
+import { QuickMedicine } from "./QuickMedicine";
 
 @ObjectType()
 @Entity()
-export class QuickPrescriptionTest extends BaseEntity {
+export class QuickPrescription extends BaseEntity {
   @Field(() => ID!)
   @PrimaryGeneratedColumn()
   id!: number;
@@ -48,29 +49,11 @@ export class QuickPrescriptionTest extends BaseEntity {
   @Column({ default: false })
   paid!: boolean;
 
-  @Field()
-  @Column({ type: "json" })
-  result!: string;
-
-  // @Field()
-  // @Column({ default: false })
-  // bp!: boolean;
-
-  // @Field()
-  // @Column({ default: false })
-  // dressing!: boolean;
-
-  // @Field()
-  // @Column({ default: false })
-  // injection!: boolean;
-
-  // @Field()
-  // @Column({ default: false })
-  // tat!: boolean;
-
-  // @Field()
-  // @Column({ default: false })
-  // depo!: boolean;
+  @Field(() => [QuickMedicine])
+  @OneToMany(() => QuickMedicine, (medicine) => medicine.prescription, {
+    onDelete: "CASCADE",
+  })
+  medicines: QuickMedicine[];
 
   @Field(() => String, { nullable: true })
   @Column({ nullable: true })

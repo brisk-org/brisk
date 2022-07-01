@@ -15,13 +15,12 @@ export default async () => {
     url: "postgresql://postgres:kranuaonpostgres@localhost:5433/newlife-brisk",
     type: "postgres",
   });
-  // await Card.clear();
-  await card(c);
-  await history(c);
-  await lab(c);
-  await examination(c);
-  await medicine(c);
-  await medication(c);
-  await cardSales(c);
+  // await card(c);
+  // await history(c);
+  // await lab(c);
+  // await examination(c);
+  // await medicine(c);
+  // await medicatin(c);
+  // await cardSales(c);
   await qucickTest(c);
 };

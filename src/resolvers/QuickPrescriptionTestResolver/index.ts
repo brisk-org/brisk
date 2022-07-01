@@ -16,7 +16,7 @@ import {
   Float,
   Args,
 } from "type-graphql";
-import { QuickPrescriptionTest } from "../../entities/QuickPrescriptionTest";
+import { QuickPrescription } from "../../entities/QuickPrescription";
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
 import { Notification } from "../../entities/Notification";
 import {
@@ -25,31 +25,35 @@ import {
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
 import { NotificationAction, Occupation } from "../..//utils/EnumTypes";
+import { QuickMedicine } from "../../entities/QuickMedicine";
 
 @ObjectType()
 @Resolver()
 export class QuickPrescriptionResolver {
   @Query(() => Float)
   async quickPrescriptionTestsCount(): Promise<number> {
-    return await QuickPrescriptionTest.count();
+    return await QuickPrescription.count();
   }
-  @Query(() => [QuickPrescriptionTest])
+  @Query(() => [QuickPrescription])
   async quickPrescriptionTests(@Args() { skip, take }: OffsetFieldsWithTime) {
-    return await QuickPrescriptionTest.find({
+    return await QuickPrescription.find({
       order: { id: "DESC" },
       skip,
       take,
     });
   }
-  @Mutation(() => QuickPrescriptionTest)
+  @Mutation(() => QuickPrescription)
   async createQuickPrescriptionTest(
-    @Arg("input") input: CreateQuickPrescriptionTestInput,
+    @Arg("input")
+    { name, price, medicineIds, other }: CreateQuickPrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const result = JSON.stringify(input.result);
-    const quickPrescriptionTest = QuickPrescriptionTest.create({
-      ...input,
-      result,
+    const medicines = await QuickMedicine.find({ where: { id: medicineIds } });
+    const quickPrescriptionTest = QuickPrescription.create({
+      name,
+      price,
+      other,
+      medicines,
     });
 
     await quickPrescriptionTest.save();
@@ -69,14 +73,14 @@ export class QuickPrescriptionResolver {
 
     return quickPrescriptionTest;
   }
-  @Mutation(() => QuickPrescriptionTest)
+  @Mutation(() => QuickPrescription)
   async completeQuickPrescriptionTest(
     @Arg("input") input: CompleteQuickPrescriptionTestInput,
     @Arg("id") id: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickPrescriptionTest = await QuickPrescriptionTest.findOne(id);
-    await QuickPrescriptionTest.update(id, {
+    const quickPrescriptionTest = await QuickPrescription.findOne(id);
+    await QuickPrescription.update(id, {
       ...input,
       completed: true,
     });
@@ -111,17 +115,17 @@ export class QuickPrescriptionResolver {
 
     return quickPrescriptionTest;
   }
-  @Mutation(() => QuickPrescriptionTest)
+  @Mutation(() => QuickPrescription)
   async markQuickPrescriptionTestAsPaid(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickPrescriptionTest = await QuickPrescriptionTest.findOne(id);
+    const quickPrescriptionTest = await QuickPrescription.findOne(id);
     if (!quickPrescriptionTest) {
       return null;
     }
 
-    await QuickPrescriptionTest.update(id, { paid: true });
+    await QuickPrescription.update(id, { paid: true });
     await quickPrescriptionTest?.reload();
 
     await pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
@@ -153,16 +157,16 @@ export class QuickPrescriptionResolver {
 
     return quickPrescriptionTest;
   }
-  @Mutation(() => QuickPrescriptionTest)
+  @Mutation(() => QuickPrescription)
   async markQuickPrescriptionTestAsSeen(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickPrescriptionTest = await QuickPrescriptionTest.findOne(id);
+    const quickPrescriptionTest = await QuickPrescription.findOne(id);
     if (!quickPrescriptionTest) {
       return null;
     }
-    await QuickPrescriptionTest.update({ id }, { new: false });
+    await QuickPrescription.update({ id }, { new: false });
     await quickPrescriptionTest.reload();
 
     const deleteNotification = await Notification.findOne({
@@ -182,13 +186,13 @@ export class QuickPrescriptionResolver {
     return quickPrescriptionTest;
   }
 
-  @Subscription(() => QuickPrescriptionTest, {
+  @Subscription(() => QuickPrescription, {
     topics: NEW_CREATE_QUICK_PRESCRIPTION,
   })
   async newCreatedQuickPrescriptionTest(
     @Root()
-    { quickPrescriptionTest }: { quickPrescriptionTest: QuickPrescriptionTest }
-  ): Promise<QuickPrescriptionTest> {
+    { quickPrescriptionTest }: { quickPrescriptionTest: QuickPrescription }
+  ): Promise<QuickPrescription> {
     return quickPrescriptionTest;
   }
 }

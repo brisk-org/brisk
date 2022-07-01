@@ -29,25 +29,36 @@ export default async (connection: Connection) => {
     }).save();
   }
 
-  for (let i = 0; i < setting[0].laboratory_tests_data.length; i++) {
+  for (
+    let i = 0;
+    i < JSON.parse(setting[0].laboratory_tests_data).length;
+    i++
+  ) {
     const parsedData = JSON.parse(setting[0].laboratory_tests_data)[i];
+    console.log(
+      parsedData,
+      "heree",
+      i,
+      setting[0].laboratory_tests_data.length
+    );
     const category = await LaboratoryTestCategory.findOne({
       where: { name: parsedData.category },
     });
     if (!category) {
       throw new Error(`NO category yaaaosdofksldj ${parsedData.category}`);
     }
+    console.log(category, parsedData);
     await LaboratoryTest.create({
       category,
       name: parsedData.name,
       price: parsedData.price,
       normalValue: parsedData.normalValue || "",
     }).save();
-    console.log(
-      await (
-        await LaboratoryTest.find()
-      ).length,
-      JSON.parse(setting[0].laboratory_tests_data).length
-    );
   }
+  console.log(
+    await (
+      await LaboratoryTest.find()
+    ).length,
+    JSON.parse(setting[0].laboratory_tests_data).length
+  );
 };

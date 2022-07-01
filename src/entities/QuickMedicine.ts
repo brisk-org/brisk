@@ -1,3 +1,4 @@
+import { PerDay } from "../utils/EnumTypes";
 import { Field, ID, ObjectType } from "type-graphql";
 import {
   Entity,
@@ -6,13 +7,15 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
+  OneToMany,
   ManyToOne,
 } from "typeorm";
-import { QuickLaboratoryExamination } from "./QuickLaboratoryExamination";
+import { Medication } from "./Medication";
+import { QuickPrescription } from "./QuickPrescription";
 
 @ObjectType()
 @Entity()
-export class QuickLaboratoryTest extends BaseEntity {
+export class QuickMedicine extends BaseEntity {
   @Field(() => ID!)
   @PrimaryGeneratedColumn()
   id: number;
@@ -21,11 +24,15 @@ export class QuickLaboratoryTest extends BaseEntity {
   @Column()
   name: string;
 
-  @Field(() => QuickLaboratoryTest, { nullable: true })
-  @ManyToOne(() => QuickLaboratoryExamination, (labTest) => labTest.tests, {
-    nullable: true,
-  })
-  examination?: QuickLaboratoryExamination;
+  @Field(() => [QuickPrescription])
+  @ManyToOne(
+    () => QuickPrescription,
+    (prescription) => prescription.medicines,
+    {
+      onDelete: "CASCADE",
+    }
+  )
+  prescription: QuickPrescription;
 
   @Field(() => String)
   @CreateDateColumn()

@@ -1,5 +1,9 @@
 import { registerEnumType } from "type-graphql";
 
+export enum QuickLaboratoryExaminationResult {
+  POSITIVE = "Positive",
+  NEGATIVE = "Negative",
+}
 export enum PerDay {
   BID = "BID",
   STAT = "STAT",
@@ -22,6 +26,9 @@ export enum NotificationAction {
 
 registerEnumType(PerDay, {
   name: "PerDay",
+});
+registerEnumType(QuickLaboratoryExaminationResult, {
+  name: "QuickLaboratoryExaminationResult",
 });
 registerEnumType(Occupation, {
   name: "Occupation",

@@ -10,8 +10,8 @@ import {
 } from "typeorm";
 import { Prescription } from "./Prescription";
 import { LaboratoryExamination } from "./LaboratoryExamination";
-import { QuickPrescriptionTest } from "./QuickPrescriptionTest";
-import { QuickLaboratoryTest } from "./QuickLaboratoryTest";
+import { QuickPrescription } from "./QuickPrescription";
+import { QuickLaboratoryExamination } from "./QuickLaboratoryExamination";
 import { Card } from "./Card";
 
 @ObjectType()
@@ -56,25 +56,25 @@ export class Notification extends BaseEntity {
   })
   prescription?: Prescription;
 
-  @Field(() => QuickPrescriptionTest, { nullable: true })
+  @Field(() => QuickPrescription, { nullable: true })
   @ManyToOne(
-    () => QuickPrescriptionTest,
+    () => QuickPrescription,
     (quickPrescription) => quickPrescription.notifications,
     {
       nullable: true,
     }
   )
-  quick_prescription_test?: QuickPrescriptionTest;
+  quick_prescription_test?: QuickPrescription;
 
-  @Field(() => QuickLaboratoryTest, { nullable: true })
+  @Field(() => QuickLaboratoryExamination, { nullable: true })
   @ManyToOne(
-    () => QuickLaboratoryTest,
+    () => QuickLaboratoryExamination,
     (quickLaboratoryTest) => quickLaboratoryTest.notifications,
     {
       nullable: true,
     }
   )
-  quick_laboratory_test?: QuickLaboratoryTest;
+  quick_laboratory_test?: QuickLaboratoryExamination;
 
   @Field(() => String)
   @CreateDateColumn()

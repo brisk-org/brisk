@@ -16,7 +16,7 @@ import {
   Float,
   Args,
 } from "type-graphql";
-import { QuickLaboratoryTest } from "../../entities/QuickLaboratoryTest";
+import { QuickLaboratoryExamination } from "../../entities/QuickLaboratoryExamination";
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
 import { Notification } from "../../entities/Notification";
 import {
@@ -25,29 +25,34 @@ import {
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
+import { QuickLaboratoryTest } from "../../entities/QuickLaboratoryTest";
 @ObjectType()
 @Resolver()
 export class QuickLaboratoryTestResolver {
   @Query(() => Float)
   async quickLaboratoryTestsCount(): Promise<number> {
-    return await QuickLaboratoryTest.count();
+    return await QuickLaboratoryExamination.count();
   }
-  @Query(() => [QuickLaboratoryTest])
+  @Query(() => [QuickLaboratoryExamination])
   async quickLaboratoryTests(@Args() { skip, take }: OffsetFieldsWithTime) {
-    return await QuickLaboratoryTest.find({
+    return await QuickLaboratoryExamination.find({
       order: { id: "DESC" },
       skip,
       take,
     });
   }
 
-  @Mutation(() => QuickLaboratoryTest)
+  @Mutation(() => QuickLaboratoryExamination)
   async createQuickLaboratoryTest(
-    @Arg("input") input: CreateQuickLabTestInput,
+    @Arg("input") { name, other, price, testIds }: CreateQuickLabTestInput,
     @PubSub() pubsub: PubSubEngine
-  ): Promise<QuickLaboratoryTest> {
-    const quickLaboratoryTest = await QuickLaboratoryTest.create({
-      ...input,
+  ): Promise<QuickLaboratoryExamination> {
+    const tests = await QuickLaboratoryTest.find({ where: { id: testIds } });
+    const quickLaboratoryTest = await QuickLaboratoryExamination.create({
+      name,
+      other,
+      price,
+      tests,
     }).save();
 
     const notification = await Notification.create({
@@ -65,14 +70,14 @@ export class QuickLaboratoryTestResolver {
 
     return quickLaboratoryTest;
   }
-  @Mutation(() => QuickLaboratoryTest)
+  @Mutation(() => QuickLaboratoryExamination)
   async completeQuickLaboratoryTest(
     @Arg("input") input: CompleteQuickLabTestInput,
     @Arg("id") id: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickLaboratoryTest = await QuickLaboratoryTest.findOne(id);
-    await QuickLaboratoryTest.update(id, {
+    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id);
+    await QuickLaboratoryExamination.update(id, {
       ...input,
       completed: true,
       new: false,
@@ -108,16 +113,16 @@ export class QuickLaboratoryTestResolver {
     });
     return quickLaboratoryTest;
   }
-  @Mutation(() => QuickLaboratoryTest)
+  @Mutation(() => QuickLaboratoryExamination)
   async markQuickLaboratoryTestAsPaid(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickLaboratoryTest = await QuickLaboratoryTest.findOne(id);
+    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id);
     if (!quickLaboratoryTest) {
       return null;
     }
-    await QuickLaboratoryTest.update(id, { paid: true });
+    await QuickLaboratoryExamination.update(id, { paid: true });
     await quickLaboratoryTest?.reload();
     await pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
       quickLaboratoryTest,
@@ -147,16 +152,16 @@ export class QuickLaboratoryTestResolver {
 
     return quickLaboratoryTest;
   }
-  @Mutation(() => QuickLaboratoryTest)
+  @Mutation(() => QuickLaboratoryExamination)
   async markQuickLaboratoryTestAsSeen(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quick_laboratory_test = await QuickLaboratoryTest.findOne(id);
+    const quick_laboratory_test = await QuickLaboratoryExamination.findOne(id);
     if (!quick_laboratory_test) {
       return null;
     }
-    await QuickLaboratoryTest.update({ id }, { new: false });
+    await QuickLaboratoryExamination.update({ id }, { new: false });
     await quick_laboratory_test.reload();
     const deleteNotification = await Notification.findOne({
       where: {
@@ -177,13 +182,13 @@ export class QuickLaboratoryTestResolver {
     return quick_laboratory_test;
   }
 
-  @Subscription(() => QuickLaboratoryTest, {
+  @Subscription(() => QuickLaboratoryExamination, {
     topics: NEW_CREATE_QUICK_LABORATORY_TEST,
   })
   async newCreatedQuickLaboratoryTest(
     @Root()
-    { quickLaboratoryTest }: { quickLaboratoryTest: QuickLaboratoryTest }
-  ): Promise<QuickLaboratoryTest> {
+    { quickLaboratoryTest }: { quickLaboratoryTest: QuickLaboratoryExamination }
+  ): Promise<QuickLaboratoryExamination> {
     return quickLaboratoryTest;
   }
 }

@@ -9,6 +9,8 @@ export default async (connection: Connection) => {
   const examination = await connection.query(
     'select * from "prescription_test"'
   );
+  await Prescription.delete({});
+  await Medication.clear();
   for (let i = 0; i < examination.length; i++) {
     const {
       cardId,
@@ -49,7 +51,7 @@ export default async (connection: Connection) => {
         strength,
         //found 1.5 here
         forDays: parseInt(forDays),
-        perDay: (perDay as string).toUpperCase(),
+        perDay: ((perDay as string) === "bib" ? "bid" : perDay).toUpperCase(),
       }).save();
       prescription.medications.push(medication);
     }

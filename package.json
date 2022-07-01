@@ -7,6 +7,7 @@
     "start": "node ./dist/src/index.js",
     "dev": "ts-node-dev --respawn src/index.ts",
     "watch": "tsc --watch",
+    "seed": "ts-node ./src/utils/seed/index.ts",
     "build": "tsc && yarn generate && yarn migration ",
     "service": "node service.js",
     "generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n migration -p",

@@ -11,7 +11,11 @@ export default async (connection: Connection) => {
   );
   let err = 0;
 
-  for (let i = 0; i < setting[0].prescription_tests_data.length; i++) {
+  for (
+    let i = 0;
+    i < JSON.parse(setting[0].prescription_tests_data).length;
+    i++
+  ) {
     const {
       name,
       price,

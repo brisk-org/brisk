@@ -1,22 +1,22 @@
-import { InputType, Field } from "type-graphql";
+import { InputType, Field, Float, ID } from "type-graphql";
 
 @InputType()
 export class CreateQuickLabTestInput {
   @Field()
   name!: string;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   price?: number;
 
-  @Field()
-  result: string;
+  @Field(() => [ID])
+  testIds: number[];
 
   @Field(() => String, { nullable: true })
   other?: string;
 }
 @InputType()
 export class CompleteQuickLabTestInput {
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   price?: number;
 
   @Field(() => String, { nullable: true })
