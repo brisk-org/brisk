@@ -7,6 +7,7 @@ import {
   BaseEntity,
   UpdateDateColumn,
   OneToMany,
+  ManyToMany,
 } from "typeorm";
 import { Notification } from "./Notification";
 import { QuickMedicine } from "./QuickMedicine";
@@ -50,7 +51,7 @@ export class QuickPrescription extends BaseEntity {
   paid!: boolean;
 
   @Field(() => [QuickMedicine])
-  @OneToMany(() => QuickMedicine, (medicine) => medicine.prescription, {
+  @ManyToMany(() => QuickMedicine, (medicine) => medicine.prescription, {
     onDelete: "CASCADE",
   })
   medicines: QuickMedicine[];

@@ -7,6 +7,8 @@ import {
   UpdateDateColumn,
   BaseEntity,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { QuickLaboratoryExamination } from "./QuickLaboratoryExamination";
 
@@ -21,11 +23,12 @@ export class QuickLaboratoryTest extends BaseEntity {
   @Column()
   name: string;
 
-  @Field(() => QuickLaboratoryTest, { nullable: true })
-  @ManyToOne(() => QuickLaboratoryExamination, (labTest) => labTest.tests, {
+  @Field(() => [QuickLaboratoryExamination], { nullable: true })
+  @ManyToMany(() => QuickLaboratoryExamination, (labTest) => labTest.tests, {
     nullable: true,
+    onDelete: "CASCADE",
   })
-  examination?: QuickLaboratoryExamination;
+  examinations?: QuickLaboratoryExamination[];
 
   @Field(() => String)
   @CreateDateColumn()

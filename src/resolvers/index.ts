@@ -14,8 +14,10 @@ import { CardSalesResolver } from "./CardSalesResolver";
 import { HistoryResolver } from "./HistoryResolver";
 import { PrescriptionResolver } from "./PrescriptionResolver";
 import { MedicationResolver } from "./MedicationResolver";
-import { QuickPrescriptionResolver } from "./QuickPrescriptionTestResolver";
+import { QuickPrescriptionResolver } from "./QuickPrescriptionResolver";
+import { QuickLaboratoryExaminationResolver } from "./QuickLaboratoryExaminationResolver";
 import { QuickLaboratoryTestResolver } from "./QuickLaboratoryTestResolver";
+import { QuickMedicineResolver } from "./QuickMedicineResolver";
 import { NotificationResolver } from "./NotificationResolver";
 
 export default [
@@ -33,6 +35,8 @@ export default [
   MedicationResolver,
   PrescriptionResolver,
   QuickPrescriptionResolver,
-  QuickLaboratoryTestResolver,
+  QuickLaboratoryExaminationResolver,
   NotificationResolver,
+  QuickLaboratoryTestResolver,
+  QuickMedicineResolver,
 ] as NonEmptyArray<Function> | NonEmptyArray<string>;

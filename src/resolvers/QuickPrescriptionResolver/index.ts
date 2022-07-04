@@ -24,26 +24,31 @@ import {
   NEW_CREATE_QUICK_PRESCRIPTION,
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
-import { NotificationAction, Occupation } from "../..//utils/EnumTypes";
+import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 import { QuickMedicine } from "../../entities/QuickMedicine";
 
 @ObjectType()
 @Resolver()
 export class QuickPrescriptionResolver {
   @Query(() => Float)
-  async quickPrescriptionTestsCount(): Promise<number> {
+  async quickPrescriptionCount(): Promise<number> {
     return await QuickPrescription.count();
   }
   @Query(() => [QuickPrescription])
-  async quickPrescriptionTests(@Args() { skip, take }: OffsetFieldsWithTime) {
+  async quickPrescription(@Arg("id", () => ID) id: number | string) {
+    return await QuickPrescription.findOne(id);
+  }
+  @Query(() => [QuickPrescription])
+  async quickPrescriptions(@Args() { skip, take }: OffsetFieldsWithTime) {
     return await QuickPrescription.find({
       order: { id: "DESC" },
+      relations: ["medicines"],
       skip,
       take,
     });
   }
   @Mutation(() => QuickPrescription)
-  async createQuickPrescriptionTest(
+  async createQuickPrescription(
     @Arg("input")
     { name, price, medicineIds, other }: CreateQuickPrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
@@ -74,7 +79,7 @@ export class QuickPrescriptionResolver {
     return quickPrescriptionTest;
   }
   @Mutation(() => QuickPrescription)
-  async completeQuickPrescriptionTest(
+  async completeQuickPrescription(
     @Arg("input") input: CompleteQuickPrescriptionTestInput,
     @Arg("id") id: string,
     @PubSub() pubsub: PubSubEngine
@@ -116,7 +121,7 @@ export class QuickPrescriptionResolver {
     return quickPrescriptionTest;
   }
   @Mutation(() => QuickPrescription)
-  async markQuickPrescriptionTestAsPaid(
+  async markQuickPrescriptionAsPaid(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
@@ -158,7 +163,7 @@ export class QuickPrescriptionResolver {
     return quickPrescriptionTest;
   }
   @Mutation(() => QuickPrescription)
-  async markQuickPrescriptionTestAsSeen(
+  async markQuickPrescriptionAsSeen(
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
@@ -189,7 +194,7 @@ export class QuickPrescriptionResolver {
   @Subscription(() => QuickPrescription, {
     topics: NEW_CREATE_QUICK_PRESCRIPTION,
   })
-  async newCreatedQuickPrescriptionTest(
+  async newCreatedQuickPrescription(
     @Root()
     { quickPrescriptionTest }: { quickPrescriptionTest: QuickPrescription }
   ): Promise<QuickPrescription> {

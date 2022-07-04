@@ -7,6 +7,8 @@ import {
   BaseEntity,
   UpdateDateColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { QuickLaboratoryExaminationResult } from "../utils/EnumTypes";
 import { Notification } from "./Notification";
@@ -51,7 +53,8 @@ export class QuickLaboratoryExamination extends BaseEntity {
   paid: boolean;
 
   @Field(() => [QuickLaboratoryTest])
-  @OneToMany(() => QuickLaboratoryTest, (labTest) => labTest.examination)
+  @ManyToMany(() => QuickLaboratoryTest, (labTest) => labTest.examinations)
+  @JoinTable()
   tests: QuickLaboratoryTest[];
 
   @Field(() => QuickLaboratoryExaminationResult, { nullable: true })

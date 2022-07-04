@@ -22,7 +22,7 @@ const app = express();
 const main = async function () {
   await createConnection(connection);
 
-  await seed();
+  // await seed();
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
