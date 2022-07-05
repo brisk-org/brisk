@@ -46,7 +46,9 @@ export class QuickLaboratoryExaminationResolver {
   }
   @Query(() => QuickLaboratoryExamination)
   async quickLaboratoryExamination(@Arg("id", () => ID) id: number | string) {
-    return await QuickLaboratoryExamination.findOne(id);
+    return await QuickLaboratoryExamination.findOne(id, {
+      relations: ["tests"],
+    });
   }
 
   @Mutation(() => QuickLaboratoryExamination)
@@ -92,14 +94,15 @@ export class QuickLaboratoryExaminationResolver {
     @Arg("id") id: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id);
+    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id, {
+      relations: ["tests"],
+    });
     await QuickLaboratoryExamination.update(id, {
       ...input,
       completed: true,
       new: false,
     });
     await quickLaboratoryTest?.reload();
-    quickLaboratoryTest?.reload();
     await pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
       quickLaboratoryTest,
     });
@@ -134,7 +137,9 @@ export class QuickLaboratoryExaminationResolver {
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id);
+    const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id, {
+      relations: ["tests"],
+    });
     if (!quickLaboratoryTest) {
       return null;
     }

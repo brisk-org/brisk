@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { Notification } from "./Notification";
 import { QuickMedicine } from "./QuickMedicine";
@@ -54,6 +55,7 @@ export class QuickPrescription extends BaseEntity {
   @ManyToMany(() => QuickMedicine, (medicine) => medicine.prescription, {
     onDelete: "CASCADE",
   })
+  @JoinTable()
   medicines: QuickMedicine[];
 
   @Field(() => String, { nullable: true })

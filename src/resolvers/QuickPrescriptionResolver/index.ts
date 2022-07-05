@@ -34,9 +34,9 @@ export class QuickPrescriptionResolver {
   async quickPrescriptionCount(): Promise<number> {
     return await QuickPrescription.count();
   }
-  @Query(() => [QuickPrescription])
+  @Query(() => QuickPrescription)
   async quickPrescription(@Arg("id", () => ID) id: number | string) {
-    return await QuickPrescription.findOne(id);
+    return await QuickPrescription.findOne(id, { relations: ["medicines"] });
   }
   @Query(() => [QuickPrescription])
   async quickPrescriptions(@Args() { skip, take }: OffsetFieldsWithTime) {
@@ -53,13 +53,20 @@ export class QuickPrescriptionResolver {
     { name, price, medicineIds, other }: CreateQuickPrescriptionTestInput,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const medicines = await QuickMedicine.find({ where: { id: medicineIds } });
     const quickPrescriptionTest = QuickPrescription.create({
       name,
       price,
       other,
-      medicines,
+      medicines: [],
     });
+
+    for (let i = 0; i < medicineIds.length; i++) {
+      const medicine = await QuickMedicine.findOne(medicineIds[i]);
+      if (!medicine) {
+        throw new Error(`No medicine named ${medicine} found`);
+      }
+      quickPrescriptionTest.medicines.push(medicine);
+    }
 
     await quickPrescriptionTest.save();
 
@@ -84,7 +91,9 @@ export class QuickPrescriptionResolver {
     @Arg("id") id: string,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickPrescriptionTest = await QuickPrescription.findOne(id);
+    const quickPrescriptionTest = await QuickPrescription.findOne(id, {
+      relations: ["medicines"],
+    });
     await QuickPrescription.update(id, {
       ...input,
       completed: true,
@@ -125,7 +134,9 @@ export class QuickPrescriptionResolver {
     @Arg("id", () => ID!) id: number,
     @PubSub() pubsub: PubSubEngine
   ) {
-    const quickPrescriptionTest = await QuickPrescription.findOne(id);
+    const quickPrescriptionTest = await QuickPrescription.findOne(id, {
+      relations: ["medicines"],
+    });
     if (!quickPrescriptionTest) {
       return null;
     }
