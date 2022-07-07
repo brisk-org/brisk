@@ -3,6 +3,7 @@ import { Card } from "../../entities/Card";
 import { LaboratoryExamination } from "../../entities/LaboratoryExamination";
 import { LaboratoryTest } from "../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../entities/LaboratoryTestCategory";
+import { LaboratoryTestSubCategory } from "../../entities/LaboratoryTestSubCategory";
 
 const categries = [
   "Hematology",
@@ -15,6 +16,8 @@ const categries = [
   "Clinical Chemistry",
 ];
 export default async (connection: Connection) => {
+  await LaboratoryTestCategory.delete({});
+  await LaboratoryTest.delete({});
   const setting = await connection.query(
     'select * from "settings" where "id" = 1'
   );

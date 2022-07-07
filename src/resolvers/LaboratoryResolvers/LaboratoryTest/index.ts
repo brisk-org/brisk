@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { ObjectType, Resolver, Arg, ID, Mutation } from "type-graphql";
+import { ObjectType, Resolver, Arg, ID, Mutation, Query } from "type-graphql";
 import { LaboratoryTest } from "../../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
@@ -8,6 +8,19 @@ import { LaboratoryTestContentInput } from "./InputTypes";
 @ObjectType()
 @Resolver()
 export class LaboratoryTestResolver {
+  @Query(() => [LaboratoryTest])
+  async laboratoryTests() {
+    return LaboratoryTest.find({ relations: ["laboratoryTestExaminations"] });
+  }
+  @Query(() => [LaboratoryTest])
+  async laboratoryTestsForCategory(
+    @Arg("categoryId", () => ID!) categoryId: string
+  ) {
+    return LaboratoryTest.find({
+      relations: ["category", "laboratoryTestExaminations"],
+      where: { category: { id: categoryId } },
+    });
+  }
   @Mutation(() => LaboratoryTest)
   async createLaboratoryTest(
     @Arg("categoryId", () => ID!) categoryId: string,

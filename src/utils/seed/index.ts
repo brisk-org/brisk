@@ -22,5 +22,5 @@ export default async () => {
   // await medicine(c);
   // await medicatin(c);
   // await cardSales(c);
-  await qucickTest(c);
+  // await qucickTest(c);
 };

@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   BaseEntity,
+  ManyToMany,
 } from "typeorm";
 import { LaboratoryExamination } from "./LaboratoryExamination";
 import { LaboratoryTestCategory } from "./LaboratoryTestCategory";
@@ -36,7 +37,7 @@ export class LaboratoryTest extends BaseEntity {
   @ManyToOne(
     () => LaboratoryTestCategory,
     (laboratoryTestCategory) => laboratoryTestCategory.laboratoryTests,
-    { nullable: true }
+    { nullable: true, onDelete: "CASCADE" }
   )
   category?: LaboratoryTestCategory;
 
@@ -48,12 +49,13 @@ export class LaboratoryTest extends BaseEntity {
   )
   subCategory?: LaboratoryTestSubCategory;
 
-  @Field(() => [LaboratoryTestRequest])
-  @ManyToOne(
+  @Field(() => [LaboratoryExamination], { nullable: true })
+  @ManyToMany(
     () => LaboratoryExamination,
-    (laboratoryExamination) => laboratoryExamination.laboratoryTests
+    (laboratoryExamination) => laboratoryExamination.laboratoryTests,
+    { nullable: true }
   )
-  laboratoryTestExaminations: LaboratoryExamination[];
+  laboratoryTestExaminations?: LaboratoryExamination[];
 
   @Field({ nullable: true })
   @Column({ nullable: true })

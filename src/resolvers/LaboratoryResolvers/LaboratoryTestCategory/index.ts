@@ -19,6 +19,7 @@ export class LaboratoryTestCategoryResolver {
     return await LaboratoryTestCategory.find({
       relations: [
         "laboratoryTests",
+        "laboratoryTests.laboratoryTestExaminations",
         "subCategories",
         "subCategories.laboratoryTests",
       ],

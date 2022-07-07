@@ -8,6 +8,8 @@ import {
   ManyToOne,
   BaseEntity,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { Card } from "./Card";
 import { LaboratoryTest } from "./LaboratoryTest";
@@ -49,13 +51,14 @@ export class LaboratoryExamination extends BaseEntity {
   notifications?: Notification[];
 
   @Field(() => [LaboratoryTest])
-  @OneToMany(
+  @ManyToMany(
     () => LaboratoryTest,
-    (laboraotryTestRequest) => laboraotryTestRequest.laboratoryTestExaminations,
+    (laboraotryTest) => laboraotryTest.laboratoryTestExaminations,
     {
       onDelete: "CASCADE",
     }
   )
+  @JoinTable()
   laboratoryTests: LaboratoryTest[];
 
   @Field(() => [LaboratoryExaminationValue], { nullable: true })

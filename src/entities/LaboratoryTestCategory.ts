@@ -27,18 +27,13 @@ export class LaboratoryTestCategory extends BaseEntity {
   price?: number;
 
   @Field(() => [LaboratoryTest])
-  @OneToMany(
-    () => LaboratoryTest,
-    (laboratoryTest) => laboratoryTest.category,
-    { onDelete: "CASCADE" }
-  )
+  @OneToMany(() => LaboratoryTest, (laboratoryTest) => laboratoryTest.category)
   laboratoryTests: LaboratoryTest[];
 
   @Field(() => [LaboratoryTestSubCategory])
   @OneToMany(
     () => LaboratoryTestSubCategory,
-    (laboratoryTestSubCategory) => laboratoryTestSubCategory.category,
-    { onDelete: "CASCADE" }
+    (laboratoryTestSubCategory) => laboratoryTestSubCategory.category
   )
   subCategories: LaboratoryTestSubCategory[];
 

@@ -38,15 +38,15 @@ export class LaboratoryTestSubCategory extends BaseEntity {
   @Field(() => [LaboratoryTest])
   @OneToMany(
     () => LaboratoryTest,
-    (laboratoryTest) => laboratoryTest.subCategory,
-    { onDelete: "CASCADE" }
+    (laboratoryTest) => laboratoryTest.subCategory
   )
   laboratoryTests: LaboratoryTest[];
 
   @Field(() => LaboratoryTestCategory)
   @ManyToOne(
     () => LaboratoryTestCategory,
-    (laboratoryTest) => laboratoryTest.subCategories
+    (laboratoryTest) => laboratoryTest.subCategories,
+    { onDelete: "CASCADE" }
   )
   category: LaboratoryTestCategory;
 
