@@ -10,27 +10,22 @@ export class SettingsResolver {
   }
   @Mutation(() => Settings)
   async changeSetting(
-    @Arg("setting", () => ChangeSettingsInput) setting: ChangeSettingsInput
+    @Arg("setting", () => ChangeSettingsInput) settingProp: ChangeSettingsInput
   ) {
     try {
-      const exists = await Settings.findOne(1);
-      if (!exists) {
-        const rate = await Settings.create({
+      const setting = await Settings.findOne(1);
+      if (!setting) {
+        return await Settings.create({
           id: 1,
-          ...setting,
-          laboratory_tests_data: setting.laboratory_tests_data,
-          prescription_data: setting.prescription_data,
+          ...settingProp,
         }).save();
-        return rate;
       }
-      Settings.update(1, {
-        ...setting,
-        laboratory_tests_data: setting.laboratory_tests_data,
-        prescription_data: JSON.stringify(setting.prescription_data),
+      await Settings.update(1, {
+        ...settingProp,
       });
 
-      await exists.reload();
-      return exists;
+      await setting.reload();
+      return setting;
     } catch (error) {
       console.log(error);
       return false;

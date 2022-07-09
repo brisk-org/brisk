@@ -20,14 +20,6 @@ export class Settings extends BaseEntity {
   card_price: number;
 
   @Field()
-  @Column({ type: "json" })
-  laboratory_tests_data: string;
-
-  @Field()
-  @Column({ type: "json" })
-  prescription_data: string;
-
-  @Field()
   @Column({ default: 30 })
   card_expiration_date: number;
 
