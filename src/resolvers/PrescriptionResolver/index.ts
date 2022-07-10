@@ -31,6 +31,7 @@ import { Notification } from "../../entities/Notification";
 import { MedicationsCheckInInput } from "../MedicationResolver/InputType";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 import { Medication } from "../../entities/Medication";
+import { Medicine } from "../../entities/Medicine";
 
 @ObjectType()
 @Resolver()
@@ -130,7 +131,7 @@ export class PrescriptionResolver {
       { id },
       {
         completed: true,
-        inrolled: false
+        inrolled: false,
       }
     );
     const notification = await Notification.create({
@@ -179,10 +180,42 @@ export class PrescriptionResolver {
       return;
     }
     for (let i = 0; i < medications.length; i++) {
-      medicationsCheckIn.forEach((medicationCheckIn) => {
-        if (medications[i].medicine.name !== medicationCheckIn.name) return;
-        medications[i].checkIn = medicationCheckIn.checkIn;
-      });
+      for (let j = 0; j < medicationsCheckIn.length; j++) {
+        const medicine = await Medicine.findOne({
+          where: { name: medications[i].medicine.name },
+        });
+        console.log(medicine);
+        if (
+          !medicine ||
+          medications[i].medicine.name !== medicationsCheckIn[j].name
+        )
+          continue;
+
+        const previousCompletedMedication = medications[i].checkIn.reduce(
+          (prev, curr) =>
+            prev +
+            curr.status.reduce(
+              (prev, curr) => (curr.isCompleted ? prev + 1 : prev),
+              0
+            ),
+          0
+        );
+        const curentCompletedMedication = medicationsCheckIn[i].checkIn.reduce(
+          (prev, curr) =>
+            prev +
+            curr.status.reduce(
+              (prev, curr) => (curr.isCompleted ? prev + 1 : prev),
+              0
+            ),
+          0
+        );
+        console.log(previousCompletedMedication, curentCompletedMedication);
+        medicine.inStock =
+          medicine.inStock -
+          (curentCompletedMedication - previousCompletedMedication);
+        await medicine?.save();
+        medications[i].checkIn = medicationsCheckIn[j].checkIn;
+      }
       await medications[i].save();
     }
     const completed = medicationsCheckIn.every(({ checkIn }) =>

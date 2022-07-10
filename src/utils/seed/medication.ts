@@ -44,7 +44,7 @@ export default async (connection: Connection) => {
           {
             date: "",
             price: 0,
-            status: [{ isCompleted: false, isPaid: false }],
+            status: [{ isCompleted: false, isPaid: false, paidAt: "" }],
           },
         ],
         medicine,

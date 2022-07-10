@@ -20,7 +20,7 @@ export default async () => {
   // await lab(c);
   // await examination(c);
   // await medicine(c);
-  // await medicatin(c);
+  // await medication(c);
   // await cardSales(c);
   // await qucickTest(c);
 };
