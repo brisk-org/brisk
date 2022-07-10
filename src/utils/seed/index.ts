@@ -10,11 +10,11 @@ import medicine from "./medicine";
 import qucickTest from "./qucickTest";
 
 export default async () => {
-  const c = await createConnection({
-    name: "newLife",
-    url: "postgresql://postgres:kranuaonpostgres@localhost:5433/newlife-brisk",
-    type: "postgres",
-  });
+  // const c = await createConnection({
+  //   name: "newLife",
+  //   url: "postgresql://postgres:kranuaonpostgres@localhost:5433/newlife-brisk",
+  //   type: "postgres",
+  // });
   // await card(c);
   // await history(c);
   // await lab(c);
