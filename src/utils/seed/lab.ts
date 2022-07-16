@@ -55,6 +55,7 @@ export default async (connection: Connection) => {
       category,
       name: parsedData.name,
       price: parsedData.price,
+      hasPrice: !!parsedData.price,
       normalValue: parsedData.normalValue || "",
     }).save();
   }

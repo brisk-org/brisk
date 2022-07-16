@@ -58,6 +58,7 @@ export class CardsResolver {
         "laboratoryExaminations",
         "laboratoryExaminations.laboratoryTests",
         "laboratoryExaminations.laboratoryTests.category",
+        "laboratoryExaminations.laboratoryTests.subCategory",
         "payment",
         "history",
         "prescriptions",

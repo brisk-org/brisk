@@ -44,6 +44,9 @@ export class CreateLaboratoryExaminationArgs {
 
   @Field(() => [ID], { nullable: true })
   selectedCategories?: string[];
+
+  @Field(() => [ID], { nullable: true })
+  selectedSubCategories?: string[];
 }
 
 @InputType()

@@ -24,6 +24,7 @@ import { LaboratoryExamination } from "../../../entities/LaboratoryExamination";
 import { LaboratoryTest } from "../../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestRequest } from "../../../entities/LaboratoryTestRequest";
+import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
 import { Notification } from "../../../entities/Notification";
 import { Occupation, NotificationAction } from "../../../utils/EnumTypes";
 import {
@@ -54,7 +55,12 @@ export class LaboratoryExaminationResolver {
   @Query(() => LaboratoryExamination)
   async laboratoryExamination(@Arg("id", () => ID!) id: number | string) {
     return await LaboratoryExamination.findOne(id, {
-      relations: ["card", "laboratoryTests", "laboratoryTests.category"],
+      relations: [
+        "card",
+        "laboratoryTests",
+        "laboratoryTests.category",
+        "laboratoryTests.subCategory",
+      ],
     });
   }
 
@@ -82,6 +88,7 @@ export class LaboratoryExaminationResolver {
       cardId,
       laboratoryTest: laboratoryTestArgs,
       selectedCategories,
+      selectedSubCategories,
     }: CreateLaboratoryExaminationArgs,
     @PubSub() pubsub: PubSubEngine
   ) {
@@ -100,13 +107,24 @@ export class LaboratoryExaminationResolver {
       }
     }
     if (selectedCategories) {
-      for (let i = 0; i < selectedCategories?.length; i++) {
+      for (let i = 0; i < selectedCategories.length; i++) {
         const category = await LaboratoryTestCategory.findOne(
           selectedCategories[i]
         );
         if (category && category.trackInStock && category.inStock) {
           category.inStock = category.inStock - 1;
           await category.save();
+        }
+      }
+    }
+    if (selectedSubCategories) {
+      for (let i = 0; i < selectedSubCategories.length; i++) {
+        const subCategory = await LaboratoryTestSubCategory.findOne(
+          selectedSubCategories[i]
+        );
+        if (subCategory && subCategory.trackInStock && subCategory.inStock) {
+          subCategory.inStock = subCategory.inStock - 1;
+          await subCategory.save();
         }
       }
     }
@@ -149,11 +167,6 @@ export class LaboratoryExaminationResolver {
     if (!laboraotryExamination) {
       return null;
     }
-    // for (let i = 0; i < laboratoryTestContent.length; i++) {
-    //   await LaboratoryTestRequest.update(laboratoryTestContent[i].id, {
-    //     value: laboratoryTestContent[i].value,
-    //   });
-    // }
 
     await LaboratoryExamination.update(
       { id },
@@ -196,7 +209,7 @@ export class LaboratoryExaminationResolver {
   async saveLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @Arg("content", () => [CompleteLaboratoryExaminationInput])
-    laboratoryRequestsArgs: CompleteLaboratoryExaminationInput[]
+    laboratoryTestContent: CompleteLaboratoryExaminationInput[]
   ) {
     const laboratoryExamination = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
@@ -204,12 +217,15 @@ export class LaboratoryExaminationResolver {
     if (!laboratoryExamination) {
       return null;
     }
-    for (let i = 0; i < laboratoryRequestsArgs.length; i++) {
-      await LaboratoryTestRequest.update(laboratoryRequestsArgs[i].id, {
-        value: laboratoryRequestsArgs[i].value,
-      });
-    }
+
+    await LaboratoryExamination.update(
+      { id },
+      {
+        values: laboratoryTestContent,
+      }
+    );
     await laboratoryExamination.reload();
+    console.log(laboratoryExamination);
 
     return laboratoryExamination;
   }
