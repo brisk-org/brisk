@@ -1,4 +1,5 @@
 import { Connection } from "typeorm";
+import { Card } from "../../entities/Card";
 import { LaboratoryExamination } from "../../entities/LaboratoryExamination";
 import { LaboratoryTest } from "../../entities/LaboratoryTest";
 import { Medication } from "../../entities/Medication";
@@ -20,10 +21,14 @@ export default async (connection: Connection) => {
       new: isNew,
       result,
       other,
+      created_at,
+      updated_at,
     } = examination[i];
     const parsedResult = JSON.parse(result);
     console.log(parsedResult);
 
+    const card = await Card.findOne(cardId);
+    if (!card) return;
     const prescription = Prescription.create({
       cardId,
       completed,
@@ -32,6 +37,8 @@ export default async (connection: Connection) => {
       new: isNew,
       rx: other || "",
       medications: [],
+      created_at,
+      updated_at,
     });
     for (let i = 0; i < parsedResult.length; i++) {
       const { name, perDay, quantity: strength, forDays } = parsedResult[i];

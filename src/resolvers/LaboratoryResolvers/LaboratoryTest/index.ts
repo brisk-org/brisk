@@ -1,9 +1,20 @@
 import { GraphQLError } from "graphql";
-import { ObjectType, Resolver, Arg, ID, Mutation, Query } from "type-graphql";
+import {
+  ObjectType,
+  Resolver,
+  Arg,
+  ID,
+  Mutation,
+  Query,
+  Args,
+} from "type-graphql";
 import { LaboratoryTest } from "../../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
 import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
-import { LaboratoryTestContentInput } from "./InputTypes";
+import {
+  LaboratoryTestContentInput,
+  MoveLaboratoryTestArgs,
+} from "./InputTypes";
 
 @ObjectType()
 @Resolver()
@@ -58,6 +69,30 @@ export class LaboratoryTestResolver {
     }
     await LaboratoryTest.update(id, { ...content });
 
+    return laboratoryTest;
+  }
+  @Mutation(() => LaboratoryTest)
+  async moveLaboratoryTest(
+    @Args() { id, categoryId, subCategoryId }: MoveLaboratoryTestArgs
+  ) {
+    const laboratoryTest = await LaboratoryTest.findOne(id);
+    const category = await LaboratoryTestCategory.findOne(categoryId);
+    const subCategory = await LaboratoryTestSubCategory.findOne(subCategoryId);
+    if (!laboratoryTest) {
+      throw new GraphQLError("No category Found");
+    }
+    if (categoryId) {
+      await LaboratoryTest.update(id, {
+        category,
+        subCategory: undefined,
+      });
+    }
+    if (subCategoryId) {
+      await LaboratoryTest.update(id, {
+        subCategory,
+        category: undefined,
+      });
+    }
     return laboratoryTest;
   }
   @Mutation(() => Boolean)

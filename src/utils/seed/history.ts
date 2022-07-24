@@ -7,6 +7,7 @@ export default async (connection: Connection) => {
   for (let i = 0; i < a.length; i++) {
     try {
       await History.insert(a[i]);
+      console.log(a.length, i);
     } catch (err) {
       console.log(err);
     }

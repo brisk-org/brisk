@@ -117,11 +117,13 @@ export class LaboratoryExaminationResolver {
         }
       }
     }
+    console.log(selectedSubCategories, "herrree[lskdjf");
     if (selectedSubCategories) {
       for (let i = 0; i < selectedSubCategories.length; i++) {
         const subCategory = await LaboratoryTestSubCategory.findOne(
           selectedSubCategories[i]
         );
+        console.log(subCategory);
         if (subCategory && subCategory.trackInStock && subCategory.inStock) {
           subCategory.inStock = subCategory.inStock - 1;
           await subCategory.save();

@@ -13,7 +13,7 @@ import { verify } from "jsonwebtoken";
 import { User } from "./entities/User";
 import { createTokens } from "./utils/createTokens";
 import { authChecker } from "./functions/authChecker";
-import fileUpload from "express-fileupload";
+// import fileUpload from "express-fileupload";
 import connection from "../ormconfig";
 import seed from "./utils/seed";
 
@@ -26,7 +26,7 @@ const main = async function () {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  app.use(fileUpload());
+  // app.use(fileUpload());
   const server = new ApolloServer({
     schema: await buildSchema({
       resolvers,

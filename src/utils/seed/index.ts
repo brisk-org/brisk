@@ -8,14 +8,16 @@ import lab from "./lab";
 import medication from "./medication";
 import medicine from "./medicine";
 import qucickTest from "./qucickTest";
+import test from "./test";
 
 export default async () => {
-  // const c = await createConnection({
-  //   name: "newLife",
-  //   url: "postgresql://postgres:kranuaonpostgres@localhost:5433/newlife-brisk",
-  //   type: "postgres",
-  // });
-  // await card(c);
+  const c = await createConnection({
+    name: "newLife",
+    url: "postgresql://postgres:kranuaonpostgres@localhost:5433/newlife",
+    type: "postgres",
+  });
+  console.log(await c.query(`select count(1) from "card"`));
+  await test(c);
   // await history(c);
   // await lab(c);
   // await examination(c);

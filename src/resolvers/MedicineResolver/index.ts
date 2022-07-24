@@ -36,17 +36,13 @@ export class MedicineResolver {
     }).save();
   }
   @Mutation(() => Medicine)
-  async updateMedicine(
-    @Args() { id, name, price, inStock }: UpdateMedicineInput
-  ) {
+  async updateMedicine(@Args() { id, ...props }: UpdateMedicineInput) {
     const medicine = await Medicine.findOne(id);
     if (!medicine) {
       throw new ApolloError(`No Medicine with id ${id}`);
     }
     await Medicine.update(id, {
-      name,
-      price,
-      inStock,
+      ...props,
     });
     await medicine.reload();
     return medicine;

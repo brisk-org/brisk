@@ -1,4 +1,4 @@
-import { Field, InputType } from "type-graphql";
+import { ArgsType, Field, ID, InputType } from "type-graphql";
 
 @InputType()
 export class LaboratoryTestContentInput {
@@ -25,4 +25,16 @@ export class LaboratoryTestContentInput {
 
   @Field()
   trackInStock: boolean;
+}
+
+@ArgsType()
+export class MoveLaboratoryTestArgs {
+  @Field(() => ID!)
+  id: string;
+
+  @Field(() => ID, { nullable: true })
+  categoryId?: string;
+
+  @Field(() => ID, { nullable: true })
+  subCategoryId?: string;
 }

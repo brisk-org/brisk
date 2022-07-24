@@ -38,19 +38,13 @@ export default async (connection: Connection) => {
     i++
   ) {
     const parsedData = JSON.parse(setting[0].laboratory_tests_data)[i];
-    console.log(
-      parsedData,
-      "heree",
-      i,
-      setting[0].laboratory_tests_data.length
-    );
     const category = await LaboratoryTestCategory.findOne({
       where: { name: parsedData.category },
     });
     if (!category) {
       throw new Error(`NO category yaaaosdofksldj ${parsedData.category}`);
     }
-    console.log(category, parsedData);
+    console.log(i);
     await LaboratoryTest.create({
       category,
       name: parsedData.name,

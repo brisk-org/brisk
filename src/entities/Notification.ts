@@ -45,6 +45,7 @@ export class Notification extends BaseEntity {
     (laboratoryTest) => laboratoryTest.notifications,
     {
       nullable: true,
+      onDelete: "CASCADE",
     }
   )
   laboratory_test?: LaboratoryExamination;

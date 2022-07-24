@@ -53,7 +53,10 @@ export class LaboratoryTestSubCategoryResolver {
     if (!subCategory) {
       throw new GraphQLError("No category Found");
     }
-    await LaboratoryTestSubCategory.update(id, { ...content });
+    await LaboratoryTestSubCategory.update(id, {
+      ...content,
+      trackInStock: typeof content.inStock === "number",
+    });
     await subCategory.reload();
 
     return subCategory;

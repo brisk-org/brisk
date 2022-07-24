@@ -16,7 +16,7 @@ const connection: ConnectionOptions = {
     subscribersDir: "/src/subscriber",
   },
   synchronize: !production,
-  logging: !production,
+  logging: false,
 };
 
 export default connection;

@@ -65,6 +65,8 @@ export class PrescriptionResolver {
       .getRepository(Prescription)
       .createQueryBuilder("prescription")
       .leftJoinAndSelect("prescription.card", "card")
+      .leftJoinAndSelect("prescription.medications", "medications")
+      .leftJoinAndSelect("medications.medicine", "medicine")
       .where("card.name ILIKE :name", { name: `%${term}%` })
       .skip(skip)
       .take(take)

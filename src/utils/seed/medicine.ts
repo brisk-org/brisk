@@ -29,7 +29,7 @@ export default async (connection: Connection) => {
       forDays,
       perDay: (perDay as string).toUpperCase(),
       strength,
-      inStock: 0,
+      inStock: 10,
     }).save();
     console.log(
       await (

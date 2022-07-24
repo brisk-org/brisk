@@ -1,9 +1,10 @@
 import { Connection } from "typeorm";
+import { Card } from "../../entities/Card";
 import { LaboratoryExamination } from "../../entities/LaboratoryExamination";
 import { LaboratoryTest } from "../../entities/LaboratoryTest";
 
 export default async (connection: Connection) => {
-  // await LaboratoryExamination.delete({});
+  await LaboratoryExamination.delete({});
   const examination = await connection.query('select * from "laboratory_test"');
   for (let i = 0; i < examination.length; i++) {
     const {
@@ -16,8 +17,10 @@ export default async (connection: Connection) => {
       created_at,
       updated_at,
     } = examination[i];
-    const labName = (JSON.parse(result) as any[]).map((result) => result.name);
+    const labName = JSON.parse(result) as any[];
 
+    const card = await Card.findOne(cardId);
+    if (!card) return;
     const laboratoryExamination = await LaboratoryExamination.create({
       cardId,
       completed,
@@ -25,6 +28,7 @@ export default async (connection: Connection) => {
       price,
       new: isNew,
       laboratoryTests: [],
+      values: [],
       created_at,
       updated_at,
     });
@@ -33,17 +37,23 @@ export default async (connection: Connection) => {
       const laboratoryTest = await LaboratoryTest.findOne({
         where: {
           name:
-            labName[j] === "Differential(L)" ? "Differential(L%)" : labName[j],
+            labName[j].name === "Differential(L)"
+              ? "Differential(L%)"
+              : labName[j].name,
         },
       });
       if (!laboratoryTest) {
-        throw new Error(`No labTest names ${labName[j]}`);
+        throw new Error(`No labTest names ${labName[j].name}`);
       }
       laboratoryTest &&
         laboratoryExamination.laboratoryTests.unshift(laboratoryTest);
       laboratoryTest?.laboratoryTestExaminations?.unshift(
         laboratoryExamination
       );
+      laboratoryExamination.values?.unshift({
+        id: laboratoryTest.id + "",
+        value: labName[j].value || "",
+      });
       await laboratoryExamination.save();
       await laboratoryTest?.save();
     }
