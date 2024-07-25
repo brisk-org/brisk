@@ -28,7 +28,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(
     @Args() { username, occupation, password }: UserRegisterArgs,
-    @Ctx() { res }: Context
+    @Ctx() { res }: Context,
   ): Promise<UserResponse> {
     const userExists = await User.findOne({ where: { username } });
     if (userExists) {
@@ -68,7 +68,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async login(
     @Args() { username, password }: LoginUserInputFields,
-    @Ctx() { res }: Context
+    @Ctx() { res }: Context,
   ): Promise<UserResponse> {
     const user = await User.findOne({ where: { username } });
     if (!user) {
@@ -106,7 +106,7 @@ export class UserResolver {
   async changeUserDetail(
     @Args() { username, password }: LoginUserInputFields,
     @Arg("newName", { nullable: true }) newName: string,
-    @Ctx() { req, res }: Context
+    @Ctx() { req, res }: Context,
   ): Promise<UserResponse> {
     const user = await User.findOne({ where: { username } });
     const exist =
@@ -138,7 +138,7 @@ export class UserResolver {
     try {
       await User.update(
         { username },
-        { username: newName || username, password: hashedPassword }
+        { username: newName || username, password: hashedPassword },
       );
       await user.reload();
       console.log(user.password);
@@ -177,14 +177,14 @@ export class UserResolver {
   // }
   @Mutation(() => User)
   async uploadPhoto(
-    @Arg("id", () => ID) id: string
+    @Arg("id", () => ID) id: string,
   ): Promise<User | undefined> {
     const user = await User.findOne(id);
     return user;
   }
   @Mutation(() => Number)
   async deleteUser(
-    @Arg("id", () => ID) id: string
+    @Arg("id", () => ID) id: string,
   ): Promise<number | undefined | null> {
     return (await User.delete(id)).affected;
   }

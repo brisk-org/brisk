@@ -8,12 +8,10 @@ const connection: ConnectionOptions = {
   entities: [path.join(__dirname, "/src/entities/*.{ts,js}")],
   migrations: [path.join(__dirname, "/src/migrations/*.{ts,js}")],
   subscribers: [path.join(__dirname, "/src/subscribers/*.{ts,js}")],
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: false,
   cli: {
     entitiesDir: "/src/entities",
-    migrationsDir: "/src/migrations",
+    migrationsDir: "./src/migrations",
     subscribersDir: "/src/subscriber",
   },
   synchronize: !production,
