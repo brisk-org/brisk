@@ -18,11 +18,11 @@ export default async () => {
   });
   console.log(await c.query(`select count(1) from "card"`));
   await test(c);
-  // await history(c);
-  // await lab(c);
-  // await examination(c);
-  // await medicine(c);
-  // await medication(c);
-  // await cardSales(c);
-  // await qucickTest(c);
+  await history(c);
+  await lab(c);
+  await examination(c);
+  await medicine(c);
+  await medication(c);
+  await cardSales(c);
+  await qucickTest(c);
 };

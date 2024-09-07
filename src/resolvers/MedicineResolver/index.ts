@@ -10,7 +10,6 @@ import {
 } from "type-graphql";
 import { CreateMedicineInput, UpdateMedicineInput } from "./InputType";
 import { Medicine } from "../../entities/Medicine";
-import { ApolloError } from "apollo-server-express";
 
 @ObjectType()
 @Resolver()
@@ -39,7 +38,8 @@ export class MedicineResolver {
   async updateMedicine(@Args() { id, ...props }: UpdateMedicineInput) {
     const medicine = await Medicine.findOne(id);
     if (!medicine) {
-      throw new ApolloError(`No Medicine with id ${id}`);
+      // throw new ApolloError(`No Medicine with id ${id}`);
+      return;
     }
     await Medicine.update(id, {
       ...props,

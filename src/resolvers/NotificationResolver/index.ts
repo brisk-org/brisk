@@ -24,7 +24,7 @@ export class NotificationResolver {
   @Mutation(() => Boolean)
   async deleteNotification(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @PubSub() pubsub: PubSubEngine,
   ): Promise<boolean> {
     const notification = await Notification.findOne(id);
     await pubsub.publish(DELETE_NOTIFICATION, {
@@ -44,7 +44,7 @@ export class NotificationResolver {
     topics: NEW_NOTIFICATION,
   })
   async newNotificationSubscription(
-    @Root() { notification }: { notification: Notification }
+    @Root() { notification }: { notification: Notification },
   ): Promise<Notification> {
     return notification;
   }
@@ -52,7 +52,7 @@ export class NotificationResolver {
     topics: DELETE_NOTIFICATION,
   })
   async deleteNotificationSubscription(
-    @Root() { notification }: { notification: Notification }
+    @Root() { notification }: { notification: Notification },
   ): Promise<Notification> {
     console.log(notification);
     return notification;

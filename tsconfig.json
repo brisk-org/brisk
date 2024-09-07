@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "lib": ["dom", "es6", "es2017", "esnext.asynciterable"],
+    "module": "esnext",
+    "lib": ["es2020"],
+    "target": "es2020",
     "sourceMap": true,
-    "outDir": "./dist",
-    "moduleResolution": "Node",
+    "rootDirs": ["src"],
+    "outDir": "dist",
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "removeComments": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "strictFunctionTypes": true,
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
@@ -21,7 +21,13 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["node"]
+  },
+ "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src"]

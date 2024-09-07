@@ -9,7 +9,7 @@ export interface Req extends Request {
     username: string;
   };
 }
-type Context = {
+interface Context {
   connection: Connection;
   req: Req;
   res: Response;
