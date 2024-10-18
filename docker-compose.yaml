@@ -21,7 +21,7 @@ services:
           DATABASE_URL: postgres://brisk:brisk@db:5432/brisk_local
           HOST: 0.0.0.0
         ports:
-          - 80:4000
+          - 4000:4000
         volumes:
           - data:/home/data
 
