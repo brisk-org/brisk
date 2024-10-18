@@ -16,8 +16,7 @@ RUN yarn install
 # Copy the rest of the application code
 COPY . .
 
-# Expose the app on the port that your Express app runs on (default is 3000)
-EXPOSE 3000
+EXPOSE 4000
 
 # Start the Node.js application
 CMD ["yarn", "build"]
