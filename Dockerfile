@@ -18,5 +18,5 @@ COPY . .
 
 EXPOSE 4000
 
-# Start the Node.js application
-CMD ["yarn", "build"]
+# Build the Node.js application
+RUN yarn build
