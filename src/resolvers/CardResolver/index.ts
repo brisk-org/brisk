@@ -34,7 +34,7 @@ export class CardsResolver {
   }
   @Query(() => [Card])
   async cards(
-    @Args() { skip, take, from, to }: OffsetFieldsWithTime
+    @Args() { skip, take, from, to }: OffsetFieldsWithTime,
   ): Promise<Card[]> {
     return from && to
       ? await Card.find({
@@ -53,7 +53,8 @@ export class CardsResolver {
   }
   @Query(() => Card)
   async card(@Arg("id", () => ID!) id: number | string) {
-    return await Card.findOne(id, {
+    const memoryBefore = process.memoryUsage();
+    const card = await Card.findOne(id, {
       relations: [
         "laboratoryExaminations",
         "laboratoryExaminations.laboratoryTests",
@@ -66,11 +67,24 @@ export class CardsResolver {
         "prescriptions.medications.medicine",
       ],
     });
+    const memoryAfter = process.memoryUsage();
+
+    const memoryDifference = {
+      rss: memoryAfter.rss - memoryBefore.rss,
+      heapTotal: memoryAfter.heapTotal - memoryBefore.heapTotal,
+      heapUsed: memoryAfter.heapUsed - memoryBefore.heapUsed,
+      external: memoryAfter.external - memoryBefore.external,
+    };
+    console.log("Memory usage before request:", memoryBefore);
+    console.log("Memory usage after request:", memoryAfter);
+    console.log("Memory difference:", memoryDifference);
+
+    return card;
   }
   @Query(() => [Card])
   searchCards(
     @Args()
-    { name, phone, skip, take }: SearchField
+    { name, phone, skip, take }: SearchField,
   ): Promise<Card[]> {
     if (!name && phone) {
       return Card.find({
@@ -109,7 +123,7 @@ export class CardsResolver {
   @Mutation(() => Card)
   async createCard(
     @Arg("profile") profile: CardProfileInput,
-    @PubSub() pubsub: PubSubEngine
+    @PubSub() pubsub: PubSubEngine,
   ): Promise<Card> {
     const cardPrice = await Settings.findOne(1).then((res) => res?.card_price);
 
@@ -138,7 +152,7 @@ export class CardsResolver {
   @Mutation(() => Card)
   async updateCard(
     @Arg("profile") profile: CardProfileInput,
-    @Arg("id", () => ID!) id: number
+    @Arg("id", () => ID!) id: number,
   ) {
     const card = await Card.findOne(id);
     if (!card) {
@@ -157,10 +171,10 @@ export class CardsResolver {
   @Mutation(() => Card)
   async markCardAsNew(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @PubSub() pubsub: PubSubEngine,
   ) {
     const currentCardPrice = await Settings.findOne(1).then(
-      (res) => res?.card_price
+      (res) => res?.card_price,
     );
     const card = await Card.findOne(id);
     if (!card) {
@@ -194,7 +208,7 @@ export class CardsResolver {
   @Mutation(() => Card)
   async markCardAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @PubSub() pubsub: PubSubEngine,
   ) {
     const card = await Card.findOne(id);
     if (!card) {
@@ -227,7 +241,7 @@ export class CardsResolver {
     topics: NEW_CARD_CREATED,
   })
   async newCreatedCard(
-    @Root() { card }: { card: Card }
+    @Root() { card }: { card: Card },
   ): Promise<Card | undefined> {
     return await Card.findOne(card.id, {
       relations: ["payment"],

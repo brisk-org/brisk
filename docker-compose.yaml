@@ -1,0 +1,29 @@
+---
+version: '0.0'
+
+services:
+    db:
+        container_name: db
+        image: postgres
+        environment:
+            POSTGRES_USER: brisk
+            POSTGRES_PASSWORD: brisk
+            POSTGRES_DB: brisk_local
+            TZ: 'UTC'
+            PGTZ: 'UTC'
+
+    app:
+        image: brisk-server
+        working_dir: /workspace/src/app
+        command: sh -c "yarn migration && yarn start"
+        environment:
+          NODE_ENV: production
+          DATABASE_URL: postgres://brisk:brisk@db:5432/brisk_local
+          HOST: 0.0.0.0
+        ports:
+          - 4000:4000
+        volumes:
+          - data:/home/data
+
+volumes:
+  data:

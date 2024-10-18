@@ -92,12 +92,11 @@ const main = async function () {
 
   const PORT = process.env.PORT ?? 4000;
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: PORT }, resolve),
+    httpServer.listen({ port: PORT }, () => {
+      console.log(`Server Started at localhost:${PORT}`);
+      resolve();
+    }),
   );
-
-  // httpServer.listen(PORT, () => {
-  //   console.log(`Server Started at localhost:${PORT}`);
-  // });
 };
 
 main();
