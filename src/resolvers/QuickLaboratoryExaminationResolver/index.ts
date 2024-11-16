@@ -11,10 +11,9 @@ import {
   Resolver,
   Root,
   Subscription,
-  PubSub,
-  PubSubEngine,
   Float,
   Args,
+  Ctx,
 } from "type-graphql";
 import { QuickLaboratoryExamination } from "../../entities/QuickLaboratoryExamination";
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
@@ -26,6 +25,7 @@ import {
 } from "../../constants/subscriptionTriggername";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 import { QuickLaboratoryTest } from "../../entities/QuickLaboratoryTest";
+import Context from "src/constants/Context";
 @ObjectType()
 @Resolver()
 export class QuickLaboratoryExaminationResolver {
@@ -35,7 +35,7 @@ export class QuickLaboratoryExaminationResolver {
   }
   @Query(() => [QuickLaboratoryExamination])
   async quickLaboratoryExaminations(
-    @Args() { skip, take }: OffsetFieldsWithTime
+    @Args() { skip, take }: OffsetFieldsWithTime,
   ) {
     return await QuickLaboratoryExamination.find({
       order: { id: "DESC" },
@@ -55,7 +55,7 @@ export class QuickLaboratoryExaminationResolver {
   async createQuickLaboratoryExamination(
     @Arg("input")
     { name, other, price, result, testIds }: CreateQuickLabTestInput,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ): Promise<QuickLaboratoryExamination> {
     const quickLaboratoryTest = QuickLaboratoryExamination.create({
       name,
@@ -80,11 +80,11 @@ export class QuickLaboratoryExaminationResolver {
       message: `A Quick Laboratory test For ${quickLaboratoryTest.name} was just requested!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
-    await pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
-      quickLaboratoryTest,
-    });
+    // pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
+    //   quickLaboratoryTest,
+    // });
 
     return quickLaboratoryTest;
   }
@@ -92,7 +92,7 @@ export class QuickLaboratoryExaminationResolver {
   async completeQuickLaboratoryExamination(
     @Arg("input") input: CompleteQuickLabTestInput,
     @Arg("id") id: string,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id, {
       relations: ["tests"],
@@ -103,9 +103,9 @@ export class QuickLaboratoryExaminationResolver {
       new: false,
     });
     await quickLaboratoryTest?.reload();
-    await pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
-      quickLaboratoryTest,
-    });
+    // pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
+    //   quickLaboratoryTest,
+    // });
 
     const notification = await Notification.create({
       quick_laboratory_test: quickLaboratoryTest,
@@ -114,7 +114,7 @@ export class QuickLaboratoryExaminationResolver {
       message: `A Quick Laboratory test For ${quickLaboratoryTest?.name} was just completed!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
     const deleteNotification = await Notification.findOne({
       where: {
@@ -122,8 +122,8 @@ export class QuickLaboratoryExaminationResolver {
         action: NotificationAction["CREATE"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
 
     await Notification.delete({
@@ -135,7 +135,7 @@ export class QuickLaboratoryExaminationResolver {
   @Mutation(() => QuickLaboratoryExamination)
   async markQuickLaboratoryExaminationAsPaid(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickLaboratoryTest = await QuickLaboratoryExamination.findOne(id, {
       relations: ["tests"],
@@ -145,9 +145,9 @@ export class QuickLaboratoryExaminationResolver {
     }
     await QuickLaboratoryExamination.update(id, { paid: true });
     await quickLaboratoryTest?.reload();
-    await pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
-      quickLaboratoryTest,
-    });
+    // pubsub.publish(NEW_CREATE_QUICK_LABORATORY_TEST, {
+    //   quickLaboratoryTest,
+    // });
     const notification = await Notification.create({
       quick_laboratory_test: quickLaboratoryTest,
       for: [Occupation["DOCTOR"]],
@@ -155,15 +155,15 @@ export class QuickLaboratoryExaminationResolver {
       message: `${quickLaboratoryTest?.name} just paid for a Quick Laboraoty Test!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
     const deleteNotification = await Notification.findOne({
       where: {
         quick_laboratory_test: quickLaboratoryTest,
         action: NotificationAction["COMPLETE"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
 
     await Notification.delete({
@@ -176,7 +176,7 @@ export class QuickLaboratoryExaminationResolver {
   @Mutation(() => QuickLaboratoryExamination)
   async markQuickLaboratoryExaminationAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quick_laboratory_test = await QuickLaboratoryExamination.findOne(id);
     if (!quick_laboratory_test) {
@@ -191,8 +191,8 @@ export class QuickLaboratoryExaminationResolver {
       },
     });
     await quick_laboratory_test.reload();
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
     await Notification.delete({
       quick_laboratory_test,
@@ -208,7 +208,11 @@ export class QuickLaboratoryExaminationResolver {
   })
   async newCreatedQuickLaboratoryExamination(
     @Root()
-    { quickLaboratoryTest }: { quickLaboratoryTest: QuickLaboratoryExamination }
+    {
+      quickLaboratoryTest,
+    }: {
+      quickLaboratoryTest: QuickLaboratoryExamination;
+    },
   ): Promise<QuickLaboratoryExamination> {
     return quickLaboratoryTest;
   }

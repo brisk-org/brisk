@@ -9,8 +9,6 @@ import {
   Ctx,
   Mutation,
   Subscription,
-  PubSub,
-  PubSubEngine,
   Root,
 } from "type-graphql";
 import Context from "../../../constants/Context";
@@ -23,7 +21,6 @@ import { Card } from "../../../entities/Card";
 import { LaboratoryExamination } from "../../../entities/LaboratoryExamination";
 import { LaboratoryTest } from "../../../entities/LaboratoryTest";
 import { LaboratoryTestCategory } from "../../../entities/LaboratoryTestCategory";
-import { LaboratoryTestRequest } from "../../../entities/LaboratoryTestRequest";
 import { LaboratoryTestSubCategory } from "../../../entities/LaboratoryTestSubCategory";
 import { Notification } from "../../../entities/Notification";
 import { Occupation, NotificationAction } from "../../../utils/EnumTypes";
@@ -67,7 +64,7 @@ export class LaboratoryExaminationResolver {
   @Query(() => [LaboratoryExamination])
   async searchLaboratoryExamination(
     @Args() { term, skip, take }: SearchAndOffsetFields,
-    @Ctx() { connection }: Context
+    @Ctx() { connection }: Context,
   ): Promise<LaboratoryExamination[]> {
     return await connection
       .getRepository(LaboratoryExamination)
@@ -90,7 +87,7 @@ export class LaboratoryExaminationResolver {
       selectedCategories,
       selectedSubCategories,
     }: CreateLaboratoryExaminationArgs,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const card = await Card.findOne(cardId);
     const laboratoryTest = await LaboratoryTest.findByIds(laboratoryTestArgs);
@@ -109,7 +106,7 @@ export class LaboratoryExaminationResolver {
     if (selectedCategories) {
       for (let i = 0; i < selectedCategories.length; i++) {
         const category = await LaboratoryTestCategory.findOne(
-          selectedCategories[i]
+          selectedCategories[i],
         );
         if (category && category.trackInStock && category.inStock) {
           category.inStock = category.inStock - 1;
@@ -121,7 +118,7 @@ export class LaboratoryExaminationResolver {
     if (selectedSubCategories) {
       for (let i = 0; i < selectedSubCategories.length; i++) {
         const subCategory = await LaboratoryTestSubCategory.findOne(
-          selectedSubCategories[i]
+          selectedSubCategories[i],
         );
         console.log(subCategory);
         if (subCategory && subCategory.trackInStock && subCategory.inStock) {
@@ -148,9 +145,9 @@ export class LaboratoryExaminationResolver {
       message: `A laboratory test For ${card.name} was just requested!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
-    await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
+    pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
       laboratoryTest: laboratoryExamination,
     });
 
@@ -161,7 +158,7 @@ export class LaboratoryExaminationResolver {
     @Arg("id", () => ID!) id: number,
     @Arg("content", () => [CompleteLaboratoryExaminationInput])
     laboratoryTestContent: CompleteLaboratoryExaminationInput[],
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const laboraotryExamination = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
@@ -176,7 +173,7 @@ export class LaboratoryExaminationResolver {
         values: laboratoryTestContent,
         completed: true,
         // result,
-      }
+      },
     );
     const notification = await Notification.create({
       laboratory_test: laboraotryExamination,
@@ -191,11 +188,11 @@ export class LaboratoryExaminationResolver {
       },
     });
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
-    await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
+    pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
       laboratoryTest: laboraotryExamination,
     });
 
@@ -211,7 +208,7 @@ export class LaboratoryExaminationResolver {
   async saveLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
     @Arg("content", () => [CompleteLaboratoryExaminationInput])
-    laboratoryTestContent: CompleteLaboratoryExaminationInput[]
+    laboratoryTestContent: CompleteLaboratoryExaminationInput[],
   ) {
     const laboratoryExamination = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
@@ -224,7 +221,7 @@ export class LaboratoryExaminationResolver {
       { id },
       {
         values: laboratoryTestContent,
-      }
+      },
     );
     await laboratoryExamination.reload();
     console.log(laboratoryExamination);
@@ -234,7 +231,7 @@ export class LaboratoryExaminationResolver {
   @Mutation(() => LaboratoryExamination)
   async payForLaboratoryExamination(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const laboratory_test = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
@@ -258,12 +255,12 @@ export class LaboratoryExaminationResolver {
       },
     });
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
 
-    await pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
+    pubsub.publish(NEW_CREATE_LABORATORY_TEST, {
       laboratoryTest: laboratory_test,
     });
     await Notification.delete({
@@ -280,7 +277,7 @@ export class LaboratoryExaminationResolver {
   @Mutation(() => LaboratoryExamination)
   async markLaboratoryExaminationAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const laboratory_test = await LaboratoryExamination.findOne(id, {
       relations: ["card"],
@@ -294,8 +291,8 @@ export class LaboratoryExaminationResolver {
         action: NotificationAction["COMPLETE"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: notification!,
     });
     await LaboratoryExamination.update({ id }, { new: false });
     await Notification.delete({
@@ -309,7 +306,7 @@ export class LaboratoryExaminationResolver {
     topics: NEW_CREATE_LABORATORY_TEST,
   })
   async newCreatedLaboratoryExamination(
-    @Root() { laboratoryTest }: { laboratoryTest: LaboratoryExamination }
+    @Root() { laboratoryTest }: { laboratoryTest: LaboratoryExamination },
   ): Promise<LaboratoryExamination> {
     return laboratoryTest;
   }

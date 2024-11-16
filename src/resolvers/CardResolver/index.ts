@@ -7,10 +7,9 @@ import {
   Resolver,
   Root,
   Subscription,
-  PubSub,
-  PubSubEngine,
   Float,
   Args,
+  Ctx,
 } from "type-graphql";
 import { Between, ILike, Like } from "typeorm";
 import { SearchField, CardProfileInput } from "./InputTypes";
@@ -25,6 +24,7 @@ import {
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
 import { GraphQLError } from "graphql";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
+import Context from "src/constants/Context";
 
 @Resolver()
 export class CardsResolver {
@@ -123,7 +123,7 @@ export class CardsResolver {
   @Mutation(() => Card)
   async createCard(
     @Arg("profile") profile: CardProfileInput,
-    @PubSub() pubsub: PubSubEngine,
+    @Ctx() { pubsub }: Context,
   ): Promise<Card> {
     const cardPrice = await Settings.findOne(1).then((res) => res?.card_price);
 
@@ -144,8 +144,8 @@ export class CardsResolver {
       message: `A card For ${card.name} was just created!`,
     }).save();
 
-    await pubsub.publish(NEW_CARD_CREATED, { card });
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_CARD_CREATED, { card });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
     return card;
   }
@@ -171,7 +171,7 @@ export class CardsResolver {
   @Mutation(() => Card)
   async markCardAsNew(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine,
+    @Ctx() { pubsub }: Context,
   ) {
     const currentCardPrice = await Settings.findOne(1).then(
       (res) => res?.card_price,
@@ -199,16 +199,14 @@ export class CardsResolver {
       message: `${card.name} just visited us Again!`,
     }).save();
 
-    await pubsub.publish(NEW_CARD_CREATED, {
-      card,
-    });
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_CARD_CREATED, { card });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
     return card;
   }
   @Mutation(() => Card)
   async markCardAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine,
+    @Ctx() { pubsub }: Context,
   ) {
     const card = await Card.findOne(id);
     if (!card) {
@@ -217,9 +215,10 @@ export class CardsResolver {
     const notification = await Notification.findOne({
       where: { card },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification,
-    });
+    if (!notification) {
+      return null;
+    }
+    pubsub.publish(DELETE_NOTIFICATION, { notification });
     await Notification.delete({ card });
     await Card.update(id, { new: false });
     await card.reload();
@@ -238,7 +237,7 @@ export class CardsResolver {
   }
 
   @Subscription(() => Card, {
-    topics: NEW_CARD_CREATED,
+    topics: "NEW_CARD_CREATED",
   })
   async newCreatedCard(
     @Root() { card }: { card: Card },

@@ -1,10 +1,9 @@
 import { Notification } from "../../entities/Notification";
 import {
   Arg,
+  Ctx,
   ID,
   Mutation,
-  PubSub,
-  PubSubEngine,
   Query,
   Resolver,
   Root,
@@ -14,6 +13,7 @@ import {
   NEW_NOTIFICATION,
   DELETE_NOTIFICATION,
 } from "../../constants/subscriptionTriggername";
+import Context from "../../../src/constants/Context";
 
 @Resolver()
 export class NotificationResolver {
@@ -24,19 +24,19 @@ export class NotificationResolver {
   @Mutation(() => Boolean)
   async deleteNotification(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine,
+    @Ctx() { pubsub }: Context,
   ): Promise<boolean> {
     const notification = await Notification.findOne(id);
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: notification!,
     });
     return !!(await Notification.delete(id)).affected;
   }
   @Mutation(() => Boolean)
-  async clearNotification(@PubSub() pubsub: PubSubEngine): Promise<boolean> {
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: [],
-    });
+  async clearNotification(): Promise<boolean> {
+    // pubsub.publish(DELETE_NOTIFICATION, {
+    //   notification: [],
+    // });
     console.log("clear");
     return !!(await Notification.delete({})).affected;
   }

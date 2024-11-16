@@ -6,8 +6,6 @@ import {
   ID,
   Mutation,
   ObjectType,
-  PubSub,
-  PubSubEngine,
   Query,
   Resolver,
   Root,
@@ -59,7 +57,7 @@ export class PrescriptionResolver {
   async searchPrescriptions(
     @Args()
     { term, skip, take }: SearchAndOffsetFields,
-    @Ctx() { connection }: Context
+    @Ctx() { connection }: Context,
   ): Promise<Prescription[]> {
     return await connection
       .getRepository(Prescription)
@@ -78,7 +76,7 @@ export class PrescriptionResolver {
   async createPrescription(
     @Args()
     { price, cardId, medications: medicationArg, rx }: CreatePrescriptionArgs,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const card = await Card.findOne(cardId);
 
@@ -109,9 +107,8 @@ export class PrescriptionResolver {
       message: `A prescription test For ${card.name} was just requested!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
-
-    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+    pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_CREATE_PRESCRIPTION, {
       prescription,
     });
 
@@ -121,7 +118,7 @@ export class PrescriptionResolver {
   @Mutation(() => Prescription)
   async markPrescriptionAsCompleted(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const prescription = await Prescription.findOne(id, {
       relations: ["card"],
@@ -134,7 +131,7 @@ export class PrescriptionResolver {
       {
         completed: true,
         inrolled: false,
-      }
+      },
     );
     const notification = await Notification.create({
       prescription,
@@ -143,10 +140,10 @@ export class PrescriptionResolver {
       message: `A prescription test For ${prescription.card.name} was just completed!`,
     }).save();
 
-    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+    pubsub.publish(NEW_CREATE_PRESCRIPTION, {
       prescription,
     });
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
     const deleteNotification = await Notification.findOne({
       where: {
         prescription: {
@@ -155,8 +152,8 @@ export class PrescriptionResolver {
         action: NotificationAction.PAYMENT,
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
     await Notification.delete({
       prescription,
@@ -169,7 +166,7 @@ export class PrescriptionResolver {
     @Arg("id", () => ID!) id: number,
     @Arg("medicationsCheckIn", () => [MedicationsCheckInInput])
     medicationsCheckIn: MedicationsCheckInInput[],
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const prescription = await Prescription.findOne(id, {
       relations: ["card", "medications", "medications.medicine"],
@@ -198,18 +195,18 @@ export class PrescriptionResolver {
             prev +
             curr.status.reduce(
               (prev, curr) => (curr.isCompleted ? prev + 1 : prev),
-              0
+              0,
             ),
-          0
+          0,
         );
         const curentCompletedMedication = medicationsCheckIn[i].checkIn.reduce(
           (prev, curr) =>
             prev +
             curr.status.reduce(
               (prev, curr) => (curr.isCompleted ? prev + 1 : prev),
-              0
+              0,
             ),
-          0
+          0,
         );
         console.log(previousCompletedMedication, curentCompletedMedication);
         medicine.inStock =
@@ -222,13 +219,13 @@ export class PrescriptionResolver {
     }
     const completed = medicationsCheckIn.every(({ checkIn }) =>
       checkIn.every((checkIn) =>
-        checkIn.status.every((status) => status.isCompleted)
-      )
+        checkIn.status.every((status) => status.isCompleted),
+      ),
     );
     const paid = medicationsCheckIn.every(({ checkIn }) =>
       checkIn.every((checkIn) =>
-        checkIn.status.every((status) => status.isPaid)
-      )
+        checkIn.status.every((status) => status.isPaid),
+      ),
     );
     prescription.inrolled = !(paid && completed);
     prescription.completed = completed;
@@ -241,11 +238,11 @@ export class PrescriptionResolver {
       for: [Occupation["NURSE"], Occupation["DOCTOR"]],
       message: ` ${prescription?.card.name} proceded with the CheckIn!`,
     }).save();
-    await pubsub.publish(UPDATE_PRESCRIPTION_CHECKIN, {
-      prescription,
-    });
+    // pubsub.publish(UPDATE_PRESCRIPTION_CHECKIN, {
+    //   prescription,
+    // });
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
     return prescription;
   }
@@ -253,7 +250,7 @@ export class PrescriptionResolver {
   async markPrescriptionAsPaid(
     @Arg("id", () => ID!) id: number,
     @Arg("paid") paid: boolean,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const prescription = await Prescription.findOne(id, {
       relations: ["card"],
@@ -280,12 +277,12 @@ export class PrescriptionResolver {
       },
     });
 
-    await pubsub.publish(NEW_CREATE_PRESCRIPTION, {
+    pubsub.publish(NEW_CREATE_PRESCRIPTION, {
       prescription,
     });
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
+    pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: deleteNotification!,
     });
 
     await Notification.delete({
@@ -303,7 +300,7 @@ export class PrescriptionResolver {
   @Mutation(() => Prescription)
   async markPrescriptionAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const prescription = await Prescription.findOne(id, {
       relations: ["card"],
@@ -318,8 +315,8 @@ export class PrescriptionResolver {
         action: "COMPLETE_PRESCRIPTION_TEST",
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification,
+    pubsub.publish(DELETE_NOTIFICATION, {
+      notification: notification!,
     });
     await Notification.delete({
       prescription,
@@ -332,7 +329,7 @@ export class PrescriptionResolver {
     topics: UPDATE_PRESCRIPTION_CHECKIN,
   })
   async newMedicationUpdate(
-    @Root() { prescription }: { prescription: Prescription[] }
+    @Root() { prescription }: { prescription: Prescription[] },
   ): Promise<Prescription[]> {
     return prescription;
   }
@@ -340,7 +337,7 @@ export class PrescriptionResolver {
     topics: NEW_CREATE_PRESCRIPTION,
   })
   async newCreatedPrescription(
-    @Root() { prescription }: { prescription: Prescription }
+    @Root() { prescription }: { prescription: Prescription },
   ): Promise<Prescription> {
     return prescription;
   }

@@ -1,7 +1,11 @@
 import { ConnectionOptions } from "typeorm";
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const production = process.env.NODE_ENV === "production";
-console.log(process.env.DATABASE_URL);
+
 const connection: ConnectionOptions = {
   type: "postgres",
   url: process.env.DATABASE_URL,

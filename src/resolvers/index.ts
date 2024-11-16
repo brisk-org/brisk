@@ -37,4 +37,4 @@ export default [
   NotificationResolver,
   QuickLaboratoryTestResolver,
   QuickMedicineResolver,
-] as NonEmptyArray<Function> | NonEmptyArray<string>;
+] as NonEmptyArray<Function>;

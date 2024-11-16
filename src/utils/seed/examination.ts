@@ -21,7 +21,7 @@ export default async (connection: Connection) => {
 
     const card = await Card.findOne(cardId);
     if (!card) return;
-    const laboratoryExamination = await LaboratoryExamination.create({
+    const laboratoryExamination = LaboratoryExamination.create({
       cardId,
       completed,
       paid,
@@ -48,7 +48,7 @@ export default async (connection: Connection) => {
       laboratoryTest &&
         laboratoryExamination.laboratoryTests.unshift(laboratoryTest);
       laboratoryTest?.laboratoryTestExaminations?.unshift(
-        laboratoryExamination
+        laboratoryExamination,
       );
       laboratoryExamination.values?.unshift({
         id: laboratoryTest.id + "",
@@ -62,11 +62,11 @@ export default async (connection: Connection) => {
       laboratoryExamination.laboratoryTests.length === labName.length
         ? "................................................................."
         : false,
-      labName.length
+      labName.length,
     );
     console.log(
       (await LaboratoryExamination.find()).length,
-      examination.length
+      examination.length,
     );
   }
 };

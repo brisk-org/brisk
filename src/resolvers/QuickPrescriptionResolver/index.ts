@@ -11,10 +11,9 @@ import {
   Resolver,
   Root,
   Subscription,
-  PubSub,
-  PubSubEngine,
   Float,
   Args,
+  Ctx,
 } from "type-graphql";
 import { QuickPrescription } from "../../entities/QuickPrescription";
 import { OffsetFieldsWithTime } from "../../utils/SharedInputTypes/OffsetFields";
@@ -26,6 +25,7 @@ import {
 } from "../../constants/subscriptionTriggername";
 import { NotificationAction, Occupation } from "../../utils/EnumTypes";
 import { QuickMedicine } from "../../entities/QuickMedicine";
+import Context from "../../constants/Context";
 
 @ObjectType()
 @Resolver()
@@ -51,7 +51,7 @@ export class QuickPrescriptionResolver {
   async createQuickPrescription(
     @Arg("input")
     { name, price, medicineIds, other }: CreateQuickPrescriptionTestInput,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickPrescriptionTest = QuickPrescription.create({
       name,
@@ -77,9 +77,9 @@ export class QuickPrescriptionResolver {
       message: `A Quick Prescription test For ${quickPrescriptionTest.name} was just requested!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
-    await pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
+    pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
       quickPrescriptionTest,
     });
 
@@ -89,7 +89,7 @@ export class QuickPrescriptionResolver {
   async completeQuickPrescription(
     @Arg("input") input: CompleteQuickPrescriptionTestInput,
     @Arg("id") id: string,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickPrescriptionTest = await QuickPrescription.findOne(id, {
       relations: ["medicines"],
@@ -107,20 +107,24 @@ export class QuickPrescriptionResolver {
       message: `A Quick Prescription test For ${quickPrescriptionTest?.name} was just completed!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
-    await pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
-      quickPrescriptionTest,
-    });
-    const deleteNotification = await Notification.findOne({
+    if (quickPrescriptionTest) {
+      pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
+        quickPrescriptionTest,
+      });
+    }
+    const notificationQuickPresc = await Notification.findOne({
       where: {
         quick_prescription_test: quickPrescriptionTest,
         action: NotificationAction["CREATE"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
-    });
+    if (notificationQuickPresc) {
+      pubsub.publish(NEW_NOTIFICATION, {
+        notification: notificationQuickPresc,
+      });
+    }
 
     await Notification.delete({
       quick_prescription_test: quickPrescriptionTest,
@@ -132,7 +136,7 @@ export class QuickPrescriptionResolver {
   @Mutation(() => QuickPrescription)
   async markQuickPrescriptionAsPaid(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickPrescriptionTest = await QuickPrescription.findOne(id, {
       relations: ["medicines"],
@@ -144,7 +148,7 @@ export class QuickPrescriptionResolver {
     await QuickPrescription.update(id, { paid: true });
     await quickPrescriptionTest?.reload();
 
-    await pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
+    pubsub.publish(NEW_CREATE_QUICK_PRESCRIPTION, {
       quickPrescriptionTest,
     });
     const notification = await Notification.create({
@@ -154,7 +158,7 @@ export class QuickPrescriptionResolver {
       message: `${quickPrescriptionTest.name} just paid for a Quick Laboraoty Test!`,
     }).save();
 
-    await pubsub.publish(NEW_NOTIFICATION, { notification });
+    pubsub.publish(NEW_NOTIFICATION, { notification });
 
     const deleteNotification = await Notification.findOne({
       where: {
@@ -162,9 +166,11 @@ export class QuickPrescriptionResolver {
         action: NotificationAction["COMPLETE"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
-    });
+    if (deleteNotification) {
+      pubsub.publish(DELETE_NOTIFICATION, {
+        notification: deleteNotification,
+      });
+    }
 
     await Notification.delete({
       quick_prescription_test: quickPrescriptionTest,
@@ -176,7 +182,7 @@ export class QuickPrescriptionResolver {
   @Mutation(() => QuickPrescription)
   async markQuickPrescriptionAsSeen(
     @Arg("id", () => ID!) id: number,
-    @PubSub() pubsub: PubSubEngine
+    @Ctx() { pubsub }: Context,
   ) {
     const quickPrescriptionTest = await QuickPrescription.findOne(id);
     if (!quickPrescriptionTest) {
@@ -191,9 +197,11 @@ export class QuickPrescriptionResolver {
         action: NotificationAction["PAYMENT"],
       },
     });
-    await pubsub.publish(DELETE_NOTIFICATION, {
-      notification: deleteNotification,
-    });
+    if (deleteNotification) {
+      pubsub.publish(DELETE_NOTIFICATION, {
+        notification: deleteNotification,
+      });
+    }
     await Notification.delete({
       quick_prescription_test: quickPrescriptionTest,
       action: NotificationAction["PAYMENT"],
@@ -207,7 +215,7 @@ export class QuickPrescriptionResolver {
   })
   async newCreatedQuickPrescription(
     @Root()
-    { quickPrescriptionTest }: { quickPrescriptionTest: QuickPrescription }
+    { quickPrescriptionTest }: { quickPrescriptionTest: QuickPrescription },
   ): Promise<QuickPrescription> {
     return quickPrescriptionTest;
   }
