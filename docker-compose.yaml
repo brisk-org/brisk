@@ -15,7 +15,7 @@ services:
     app:
         image: brisk-server
         working_dir: /workspace/src/app
-        command: sh -c "yarn migration && yarn start"
+        command: sh -c "yarn db:migrate && yarn start"
         environment:
           NODE_ENV: production
           DATABASE_URL: postgres://brisk:brisk@db:5432/brisk_local
